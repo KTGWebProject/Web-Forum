@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Forum Topics</title>
+</head>
+<body>
+    <h1>Forum Topics</h1>
+    
+    <form method="get" action="/topics/">
+        <input type="text" name="search" placeholder="Search">
+        <button type="submit">Search</button>
+    </form>
+
+    <ul>
+        {% for item in data %}
+            {% if item['type'] == 'Topic' %}
+                <li>
+                    <a href="/topics/{{ item['id'] }}">{{ item['title'] }}</a>
+                    <p>{{ item['description'] }}</p>
+                    <p>Created at: {{ item['created_at'] }}</p>
+                </li>
+            {% else %}
+                {% if include_replies %}
+                    <li>
+                        <p>Reply to: <a href="/topics/{{ item['topic_id'] }}">{{ item['title'] }}</a></p>
+                        <p>{{ item['content'] }}</p>
+                        <p>Created at: {{ item['created_at'] }}</p>
+                    </li>
+                {% endif %}
+            {% endif %}
+        {% endfor %}
+    </ul>
+
+    <a href="/topics/new">Create New Topic</a>
+</body>
+</html>

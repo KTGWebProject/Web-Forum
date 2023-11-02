@@ -1,7 +1,9 @@
 from datetime import datetime
+
+from fastapi.templating import Jinja2Templates
 from common.auth import get_current_user, oauth2_scheme
 from typing import Annotated
-from fastapi import APIRouter, Depends, Query, Path, Response, status
+from fastapi import APIRouter, Depends, Query, Path, Response, status, Request
 from fastapi.responses import JSONResponse
 from models.reply import Reply
 from models.topic import Topic
@@ -12,21 +14,24 @@ from mariadb import _mariadb as mdb
 from models.user import User
 from services import topics_services as ts
 
-topics_router = APIRouter(prefix='/topics')
+topics_router = APIRouter(prefix="/topics")
+
+templates = Jinja2Templates(directory="templates")
 
 @topics_router.get('/', response_model=list[Topic|Reply], responses=view_all_topics_response) 
 async def view_all(
-    token: Annotated[str, Depends(oauth2_scheme)],
+    request = Request,
     search: Annotated[str | None, Query(min_length=3, max_length=30)] = [],
     include_topics: Annotated[bool, Query] = True,
     include_replies: Annotated[bool, Query] = True,
     sort_oldest_first: Annotated[bool, Query] = False,
     paginated: Annotated[bool, Query] = True,
-    page: Annotated[int, Query] = 1
+    page: Annotated[int, Query] = 1,
     ) -> list[Topic|Reply]: 
+    token = request.cookies.get("access_token")
 
     '''Responds with a list of Topic resources'''
-    
+
     blacklist = {'and', 'but', 'from', 'only', 'top'}
     if search:
         search = set(word for word in search.split()).difference(blacklist)
@@ -48,7 +53,7 @@ async def view_all(
                                     paginated=paginated, 
                                     default_page=page
                                     )
-    return result
+    return templates.TemplateResponse("list_topics.html", {"request": request, "topics": result})
 
 @topics_router.get('/count/{category_id}', responses=count_topics_response)
 def topics_count(category_id: int) -> int:
