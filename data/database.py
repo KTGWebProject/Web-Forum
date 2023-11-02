@@ -6,7 +6,7 @@ import os
 def _get_connection() -> Connection:
     return connect(
         user='root',
-        password='1Qaz2wsx=',
+        password=os.environ.get("mariadb_root_pwd"),
         host='localhost',
         port=3306,
         database="ktg_forum_api",

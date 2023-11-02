@@ -1,7 +1,8 @@
 from models.user import User
 from typing import Annotated
-from fastapi import Depends, HTTPException
+from fastapi import Depends, HTTPException, Request
 from fastapi.security import OAuth2PasswordBearer
+from fastapi.responses import RedirectResponse
 import re
 import common.responses as responses
 from passlib.context import CryptContext
@@ -9,12 +10,16 @@ from pydantic import BaseModel
 from data.database import read_query
 from datetime import datetime, timedelta
 from jose import JWTError, jwt
+import os
+from starlette.middleware.base import BaseHTTPMiddleware
 
 
-SECRET_KEY = "85kjkgkjllk08ljhlkkjgk95jvjhgmhghgfhfgfz44mnmcngfmfcmnf145mfkjkjfdhgdfafewxd"
-ALGORITHM = "HS256"
+
+SECRET_KEY = os.environ.get("FORUM_SECRET_KEY")
+ALGORITHM = os.environ.get("FORUM_ALGORITHM")
 ACCESS_TOKEN_EXPIRE_MINUTES = 3000
 REFRESH_TOKEN_EXPIRE_MINUTES = 3000
+DUMMY_ACCESS_TOKEN = "dummy_access_token"
 
 
 
@@ -149,10 +154,18 @@ async def refresh_access_token(access_token: str, refresh_token: str):
         raise credentials_exception
     return user
 
-# #Seems that the below is not needed
-
-# async def check_is_admin(user: Annotated[User, Depends(get_current_user)]):
-#     if user.is_admin == 0:
-#         raise HTTPException(status_code=responses.BadRequest().status_code, detail="Not admin")
-#     return user
-
+class TokenValidationMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        access_token = request.cookies.get("access_token")
+        
+        if not access_token or access_token == DUMMY_ACCESS_TOKEN:
+            response = await call_next(request)
+            return response
+        
+        else:
+            try:
+                jwt.decode(access_token, SECRET_KEY, algorithms=[ALGORITHM])
+                response = await call_next(request)
+                return response     
+            except:
+                return RedirectResponse(url=f"/users/token/refresh?redirect={request.url.path}")   

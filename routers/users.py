@@ -29,15 +29,15 @@ async def register_user(form_data: Annotated[OAuth2PasswordRequestForm, Depends(
     '''
     registration = users_services.register(form_data.username, form_data.password)
     if isinstance(registration, AssertionError):
-        raise HTTPException(status_code=responses.BadRequest().status_code, detail= f"{registration}")
+         return RedirectResponse("/", status_code=303)
     if not registration:
-        raise HTTPException(status_code=responses.BadRequest().status_code, detail= "Username already exists") 
+         return RedirectResponse("/", status_code=303) 
     username, password = registration
     user = auth.authenticate_user(username, password)
     tokens = auth.token_response(user)
-    response = RedirectResponse(url="users/dashboard")
-    response.set_cookie(key="access_token", value=tokens["access_token"], httponly=True, max_age=auth.ACCESS_TOKEN_EXPIRE_MINUTES)
-    response.set_cookie(key="refresh_token", value=tokens["refresh_token"], httponly=True, max_age=auth.REFRESH_TOKEN_EXPIRE_MINUTES)
+    response = RedirectResponse(url="dashboard", status_code=303)
+    response.set_cookie(key="access_token", value=tokens["access_token"], httponly=True)
+    response.set_cookie(key="refresh_token", value=tokens["refresh_token"], httponly=True)
     return response
      
 
@@ -55,21 +55,27 @@ async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm,
     
     user = auth.authenticate_user(form_data.username, form_data.password)
     if not user:
-        response = RedirectResponse(url="users/dashboard")
-        response.set_cookie(key="access_token", value="guest", httponly=True, max_age=auth.ACCESS_TOKEN_EXPIRE_MINUTES)
-        return response    
+        return RedirectResponse("/", status_code=303)   
     tokens = auth.token_response(user)
-    if user.is_admin == 1:
-        response = RedirectResponse(url="users/dashboard/admin")
-    else: 
-        response = RedirectResponse(url="users/dashboard")
-    response.set_cookie(key="access_token", value=tokens["access_token"], httponly=True, max_age=auth.ACCESS_TOKEN_EXPIRE_MINUTES)
-    response.set_cookie(key="refresh_token", value=tokens["refresh_token"], httponly=True, max_age=auth.REFRESH_TOKEN_EXPIRE_MINUTES)
+    response = RedirectResponse(url="dashboard", status_code=303)
+    response.set_cookie(key="access_token", value=tokens["access_token"], httponly=True)
+    response.set_cookie(key="refresh_token", value=tokens["refresh_token"], httponly=True)
+    return response
+
+@users_router.post("/guest", response_model=str)
+def continue_as_guest():
+    '''
+    parameters: none
+    output: returns a dummy access_token identifying user as guest
+    
+    '''
+    response = RedirectResponse(url="users/dashboard")
+    response.set_cookie(key="access_token", value=auth.DUMMY_ACCESS_TOKEN)
     return response
 
 
 @users_router.post("/token/refresh", response_model=auth.Token, responses={401: {"detail": "string"}})
-async def refresh_token(access_token: str = Header(), refresh_token: str = Header()):
+async def refresh_token(request: Request, redirect: str = "/"):
     '''
     parameters: JWT access token - header, JWT refresh token - header
     act: - check whether JWT refresh token is valid and matching JWT access token
@@ -78,8 +84,14 @@ async def refresh_token(access_token: str = Header(), refresh_token: str = Heade
                         401 Unauthorized ("Could not validate credentials") -
                         when invalid refresh token or not matching tokens)
     '''
+    access_token = request.cookies.get("access_token")
+    refresh_token = request.cookies.get("refresh_token")
     user =  await auth.refresh_access_token(access_token, refresh_token)
-    return auth.token_response(user)
+    tokens = auth.token_response(user)
+    response = RedirectResponse(url=redirect)
+    response.set_cookie(key="access_token", value=tokens.get("access_token"), httponly=True)
+    response.set_cookie(key="refresh_token", value=tokens.get("refresh_token"), httponly=True)
+    return response
 
 @users_router.put("/admin", response_model = int, responses={400: {"detail": "string"}, 401: {"detail": "string"}})
 async def get_user(request: Request, to_change:dict):
@@ -98,20 +110,28 @@ async def get_user(request: Request, to_change:dict):
                         if username of user to be set as admin could not be found 
     '''
     access_token = request.cookies.get("access_token")
-    refresh_token = request.cookies.get("refresh_token")
-    if access_token == "guest"....
-    try:
-        user: User = await auth.get_current_user(access_token) 
-    except:
-        us
-    response.set_cookie(key="access_token", value=tokens["access_token"], httponly=True, max_age=auth.ACCESS_TOKEN_EXPIRE_MINUTES)
-    response.set_cookie(key="refresh_token", value=tokens["refresh_token"], httponly=True, max_age=auth.REFRESH_TOKEN_EXPIRE_MINUTES)   
+    user: User = await auth.get_current_user(access_token)    
     if user.is_admin == 0:
         raise HTTPException(status_code=responses.Unauthorized().status_code, detail= "Not authorized to set admin priviliges")
     update_user = auth.find_user(to_change.get("username"))
     if not update_user:
         raise HTTPException(status_code=responses.BadRequest().status_code, detail= "The username provided does not exist")
-    return users_services.set_admin(update_user.id)
+    # return users_services.set_admin(update_user.id) - nned to change to template
+
+@users_router.get("/dashboard")
+async def get_functionality(request: Request):
+    access_token = request.cookies.get("access_token")
+    if access_token == auth.DUMMY_ACCESS_TOKEN:
+        user_role = "guest"
+    else:
+        user = await auth.get_current_user(access_token)
+        if user.is_admin == 1:
+            user_role  = "admin"
+        else:
+            user_role = "registered"
+    return templates.TemplateResponse("dashboard.html", {"user_role": user_role})
+        
+    
     
         
 
