@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Topics List</title>
+</head>
+<body>
+
+<h1>Topics List</h1>
+
+<ul>
+    {% for topic in topics %}
+        <li>
+            <h2>{{ topic.title }}</h2>
+            <h3>{{ topic.text }}</h3>
+            <p>Created On: {{ topic.created_on.strftime("%Y-%m-%d %H:%M:%S") }}</p>
+            <p>Text: {{ topic.text }}</p>
+            <p>Category: {{ topic.category_name }}</p>
+            <p>Author ID: {{ topic.author_id }}</p>
+            <p>Is Locked: {{ topic.is_locked }}</p>
+            <p>Replies Count: {{ topic.replies }}</p>
+        </li>
+    {% endfor %}
+</ul>
+
+</body>
+</html>

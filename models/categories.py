@@ -30,6 +30,7 @@ class CategoryResponseModel(BaseModel):
     category_name: str
     created_on: datetime
     privacy_status: str
+    category_id: int
 
 
 class PrivilegedUsers(BaseModel):

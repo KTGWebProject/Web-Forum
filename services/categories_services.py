@@ -26,7 +26,7 @@ def read_category_params(info):
 
 
 def read_topic_params(info):
-    id_topic, title, created_on, text, id_category, id_author, is_locked, replies = info
+    id_topic, title, created_on, text, id_category, id_author, is_locked, replies, category_name = info
 
     if is_locked == 0:
         is_locked = "unlocked"
@@ -41,6 +41,7 @@ def read_topic_params(info):
         created_on,
         text,
         id_category,
+        category_name,
         author_name,
         replies,
         is_locked,
@@ -123,6 +124,7 @@ def get_all_categories(user: User = None, name_filter: str | None = None, page =
 
     return [
         CategoryResponseModel(
+            category_id=cat.id,
             category_name=cat.name,
             created_on=cat.created_on,
             privacy_status=cat.privacy_status,
@@ -135,14 +137,13 @@ def get_topics_by_cat_id(cat_id: int, user: User = None, title: str = None, sort
     params = None
     if user:
         if user.is_admin:
-            query = ''' WITH replies_count AS (
-                        SELECT topics_id_topic, COUNT(*) as replies_count 
-                        FROM replies 
-                        GROUP BY topics_id_topic)
-                        SELECT t.id_topic, t.title, t.created_on, t.text, t.id_category, t.id_author, t.is_locked, COALESCE(rc.replies_count, 0) as replies_count
+            query = ''' WITH category AS (SELECT * FROM categories c LEFT JOIN private_categories pc ON c.id_category = pc.categories_id_category
+                        WHERE c.id_category = ?),
+                        replies_count AS (SELECT topics_id_topic, COUNT(*) as replies_count FROM replies GROUP BY topics_id_topic)
+                        SELECT t.id_topic, t.title, t.created_on, t.text, t.id_category, t.id_author, t.is_locked, COALESCE(rc.replies_count, 0) as replies_count, c.name
                         FROM topics t
-                        LEFT JOIN replies_count rc ON t.id_topic = rc.topics_id_topic
-                        WHERE t.id_category = ?'''
+                        JOIN category c ON t.id_category = c.id_category
+                        LEFT JOIN replies_count rc ON t.id_topic = rc.topics_id_topic'''
             params = [cat_id]
 
             if title:
@@ -156,7 +157,7 @@ def get_topics_by_cat_id(cat_id: int, user: User = None, title: str = None, sort
                         replies_count AS (SELECT topics_id_topic, COUNT(*) as replies_count
                         FROM replies
                         GROUP BY topics_id_topic)
-                        SELECT t.id_topic, t.title, t.created_on, t.text, t.id_category, t.id_author, t.is_locked, COALESCE(rc.replies_count, 0) as replies_count
+                        SELECT t.id_topic, t.title, t.created_on, t.text, t.id_category, t.id_author, t.is_locked, COALESCE(rc.replies_count, 0) as replies_count, c.name
                         FROM topics t
                         JOIN category c ON t.id_category = c.id_category
                         LEFT JOIN replies_count rc ON t.id_topic = rc.topics_id_topic'''
@@ -172,7 +173,7 @@ def get_topics_by_cat_id(cat_id: int, user: User = None, title: str = None, sort
                     replies_count AS (SELECT topics_id_topic, COUNT(*) as replies_count 
                     FROM replies 
                     GROUP BY topics_id_topic)
-                    SELECT t.id_topic, t.title, t.created_on, t.text, t.id_category, t.id_author, t.is_locked, COALESCE(rc.replies_count, 0) as replies_count
+                    SELECT t.id_topic, t.title, t.created_on, t.text, t.id_category, t.id_author, t.is_locked, COALESCE(rc.replies_count, 0) as replies_count, c.name
                     FROM topics t
                     JOIN category c ON t.id_category = c.id_category
                     LEFT JOIN replies_count rc ON t.id_topic = rc.topics_id_topic'''

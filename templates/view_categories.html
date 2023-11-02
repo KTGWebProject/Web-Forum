@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Categories List</title>
+</head>
+<body>
+
+<h1>Categories List</h1>
+
+<ul>
+    {% for category in categories %}
+        <li>
+            <h3>{{ category.category_name }}</h3>
+            <p>Created On: {{ category.created_on.strftime("%Y-%m-%d %H:%M:%S") }}</p>
+            <p>Privacy Status: {{ category.privacy_status }}</p>
+            <a href="{{ url_for('view_topics_by_category_id', cat_id=category.category_id) }}">View Topics</a>
+        </li>
+    {% endfor %}
+</ul>
+
+</body>
+</html>
