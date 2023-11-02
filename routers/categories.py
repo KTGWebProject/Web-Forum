@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Query, status, HTTPException, Body, Path
+from fastapi import APIRouter, Depends, Query, status, HTTPException, Request, Path
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from typing import Annotated
 from pydantic import StringConstraints, Field
@@ -8,47 +8,51 @@ from models.topic import Topic
 from models.user import User
 import common.auth as auth
 import common.responses as responses
-from typing import Optional
-from jose import JWTError
+from fastapi.templating import Jinja2Templates
 
 categories_router = APIRouter(prefix="/categories")
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
+templates = Jinja2Templates(directory="templates")
 
 @categories_router.get(
     "/", response_model=list[CategoryResponseModel]
 )
 async def view_categories(
-    token: Annotated[str, Depends(oauth2_scheme)],
+    request: Request,
     name: Annotated[str | None, Query(max_length=45)] = None,
     page: Annotated[int, Query(ge=1)] = 1,
-):
+): 
+    token = request.cookies.get("access_token")
     try:
         user = await auth.get_current_user(token)
-        return categories_services.get_all_categories(user, name, page)
+        categories = categories_services.get_all_categories(user, name, page)
+        return templates.TemplateResponse("view_categories.html", {"request": request, "categories": categories})
     except:
-        return categories_services.get_all_categories(name_filter=name, page=page)
-
+        categories = categories_services.get_all_categories(name_filter=name, page=page)
+        return templates.TemplateResponse("view_categories.html", {"request": request, "categories": categories})
 
 @categories_router.get("/{cat_id}", response_model=list[Topic])
 async def view_topics_by_category_id(
     cat_id: Annotated[int, Path(ge=1)],
-    token: Annotated[str, Depends(oauth2_scheme)],
+    request: Request,
     topic_title: Annotated[str, StringConstraints(min_length=1, max_length=200)] = None,
     sorted: Annotated[str, StringConstraints(pattern="^(asc|desc)$")] = "asc",
     page: Annotated[int, Query] = 1,
 ):
+    token = request.cookies.get("access_token")
     try:
         user = await auth.get_current_user(token)
-        return categories_services.get_topics_by_cat_id(
+        topics = categories_services.get_topics_by_cat_id(
             cat_id=cat_id, user=user, title=topic_title, sorting=sorted, page=page
         )
+        return templates.TemplateResponse("view_topics_by_cat.html", {"request": request, "topics": topics})
     except:
-        return categories_services.get_topics_by_cat_id(
+        topics = categories_services.get_topics_by_cat_id(
             cat_id=cat_id, title=topic_title, sorting=sorted, page=page
         )
-
+        return templates.TemplateResponse("view_topics_by_cat.html", {"request": request, "topics": topics})
 
 @categories_router.get("/{cat_id}/privileged_users")
 async def get_privileged_users_by_cat(
