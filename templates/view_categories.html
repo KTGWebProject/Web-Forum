@@ -15,7 +15,7 @@
             <h3>{{ category.category_name }}</h3>
             <p>Created On: {{ category.created_on.strftime("%Y-%m-%d %H:%M:%S") }}</p>
             <p>Privacy Status: {{ category.privacy_status }}</p>
-            <a href="/categories/{{ category.id }}">View Topics</a>
+            <a href="{{ url_for('view_topics_by_category_id', cat_id=category.category_id) }}">View Topics</a>
         </li>
     {% endfor %}
 </ul>

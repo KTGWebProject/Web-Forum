@@ -28,6 +28,7 @@ class Topic(BaseModel):
     created_on: datetime | None = None # = None only for local testing, to be removed later!!!
     text: Annotated[str, StringConstraints(min_length= 10, max_length=1000)]
     category_id: int
+    category_name: str | None = None
     author_id: Optional[int | str | None] = None
     replies: Optional[list[TopicResponse]] | Optional[int] = []
     is_locked: bool = False
@@ -52,6 +53,7 @@ class Topic(BaseModel):
         created_on = None,
         text = None,
         category_id = None,
+        category_name = None,
         author_name = None,
         replies = None,
         access_status = None,
@@ -62,6 +64,7 @@ class Topic(BaseModel):
             created_on=created_on,
             text=text,
             category_id=category_id,
+            category_name=category_name,
             author_id=author_name,
             replies=replies,
             access_status=access_status,
