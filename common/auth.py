@@ -9,6 +9,7 @@ from passlib.context import CryptContext
 from pydantic import BaseModel
 from data.database import read_query
 from datetime import datetime, timedelta
+import time
 from jose import JWTError, jwt
 import os
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -156,16 +157,23 @@ async def refresh_access_token(access_token: str, refresh_token: str):
 
 class TokenValidationMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
-        access_token = request.cookies.get("access_token")
-        
-        if not access_token or access_token == DUMMY_ACCESS_TOKEN:
+        bypass = ["/users/token", "/users", "/users/guest"]
+        if request.url.path in bypass:
             response = await call_next(request)
             return response
-        
         else:
-            try:
-                jwt.decode(access_token, SECRET_KEY, algorithms=[ALGORITHM])
+            access_token = request.cookies.get("access_token")
+            
+            if not access_token or access_token == DUMMY_ACCESS_TOKEN:
                 response = await call_next(request)
-                return response     
-            except:
-                return RedirectResponse(url=f"/users/token/refresh?redirect={request.url.path}")   
+                return response
+            
+            else:
+                try:
+                    decoded_access_token = jwt.decode(access_token, SECRET_KEY, algorithms=[ALGORITHM])
+                    if decoded_access_token.get("exp") > int(time.time()):
+                        response = await call_next(request)
+                        return response     
+                except Exception as exc:
+                    print(exc)
+                    return RedirectResponse(url=f"/users/token/refresh?redirect={request.url.path}")   

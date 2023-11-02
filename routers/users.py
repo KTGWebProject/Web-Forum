@@ -35,7 +35,7 @@ async def register_user(form_data: Annotated[OAuth2PasswordRequestForm, Depends(
     username, password = registration
     user = auth.authenticate_user(username, password)
     tokens = auth.token_response(user)
-    response = RedirectResponse(url="dashboard", status_code=303)
+    response = RedirectResponse(url="/users/dashboard", status_code=303)
     response.set_cookie(key="access_token", value=tokens["access_token"], httponly=True)
     response.set_cookie(key="refresh_token", value=tokens["refresh_token"], httponly=True)
     return response
@@ -50,14 +50,13 @@ async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm,
     possible responses (excl. pydantic validation error): 200 OK, 
                         401 Unauthorized ("Incorrect username or password") - when no matching user
     '''
-    # if... guest...
-    # else:
+
     
     user = auth.authenticate_user(form_data.username, form_data.password)
     if not user:
         return RedirectResponse("/", status_code=303)   
     tokens = auth.token_response(user)
-    response = RedirectResponse(url="dashboard", status_code=303)
+    response = RedirectResponse(url="/users/dashboard", status_code=303)
     response.set_cookie(key="access_token", value=tokens["access_token"], httponly=True)
     response.set_cookie(key="refresh_token", value=tokens["refresh_token"], httponly=True)
     return response
@@ -69,7 +68,7 @@ def continue_as_guest():
     output: returns a dummy access_token identifying user as guest
     
     '''
-    response = RedirectResponse(url="users/dashboard")
+    response = RedirectResponse(url="/users/dashboard", status_code=303)
     response.set_cookie(key="access_token", value=auth.DUMMY_ACCESS_TOKEN)
     return response
 
@@ -129,7 +128,7 @@ async def get_functionality(request: Request):
             user_role  = "admin"
         else:
             user_role = "registered"
-    return templates.TemplateResponse("dashboard.html", {"user_role": user_role})
+    return templates.TemplateResponse("dashboard.html", context={"request": request, "user_role": user_role})
         
     
     
