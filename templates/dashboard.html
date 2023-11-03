@@ -1,14 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard</title>
 </head>
+
 <body>
 
-{% if user_role == 'guest' %}
+    {% if user_role == 'guest' %}
     <h3>Guest Access:</h3>
     <ul>
         <li><a href="/categories/">Categories List</a></li>
@@ -16,9 +18,9 @@
         <li><a href="/topics/">Topics List</a></li>
         <li><a href="/topics/{{ id }}">Topic Details</a></li>
     </ul>
-{% endif %}
+    {% endif %}
 
-{% if user_role in ['registered', 'admin'] %}
+    {% if user_role in ['registered', 'admin'] %}
     <h3>User Access:</h3>
     <ul>
         <!-- Endpoints from Guest Access -->
@@ -26,7 +28,7 @@
         <li><a href="/categories/{{ cat_id }}">Category Details</a></li>
         <li><a href="/topics/">Topics List</a></li>
         <li><a href="/topics/{{ id }}">Topic Details</a></li>
-        
+
         <!-- Additional Endpoints for Registered Users -->
         <li><a href="/topics/create">Create Topic</a></li>
         <li><a href="/topics/edit/{{ id }}">Edit Topic</a></li>
@@ -39,21 +41,33 @@
         <li><a href="/messages/specified">Specified Messages</a></li>
         <li><a href="/messages/create">Create Message</a></li>
     </ul>
-{% endif %}
+    {% endif %}
 
-{% if user_role == 'admin' %}
+    {% if user_role == 'admin' %}
     <h3>Admin Access:</h3>
     <ul>
         <li><a href="/users/admin">Admin User Management</a></li>
-        <li><a href="/categories/{{ cat_id }}/privileged_users">Privileged Users of Category</a></li>
-        <li><a href="/categories/create">Create Category</a></li>
-        <li><a href="/categories/{{ cat_id }}/privacy">Set Category Privacy</a></li>
-        <li><a href="/categories/{{ cat_id }}/access/read">Set Category Read Access</a></li>
-        <li><a href="/categories/{{ cat_id }}/access/write">Set Category Write Access</a></li>
-        <li><a href="/categories/edit/{{ cat_id }}">Edit Category</a></li>
-        <li><a href="/categories/{{ cat_id }}/access/delete">Delete Category Access</a></li>
+        <li> Privileged Users of Category </p>
+        </li>
+        <form id="myForm" method="get" style="display: flex; align-items: center;">
+            <label for="cat_id">Category id:</label>
+            <input type="number" id="cat_id" name="cat_id" required min="1" style="margin-right: 5px; width: 50px;">
+            <button type="button" onclick="submitForm()">See privileged users</button>
+        </form>
+        <script>
+            function submitForm() {
+                var catId = document.getElementById('cat_id').value;
+                if (catId > 0) { window.location.href = '/categories/' + catId + '/privileged_users'; } else { alert('Please enter a valid Category id (> 0)'); }
+            }
+        </script>
+        <li><a href="/categories/create_category">Create Category</a></li>
+        <li><a href="/categories/category_id">Set Category Privacy</a></li>
+        <li><a href="/categories/category_id">Set Category Read Access</a></li>
+        <li><a href="/categories/category_id">Set Category Write Access</a></li>
+        <li><a href="/categories/category_id">Delete Category Access</a></li>
     </ul>
-{% endif %}
+    {% endif %}
 
 </body>
+
 </html>
