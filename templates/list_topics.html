@@ -1,36 +1,74 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Forum Topics</title>
+    <title>BG Daddy Topics</title>
 </head>
 <body>
-    <h1>Forum Topics</h1>
+    <h1 style="text-align: center;">BG Daddy Topics</h1>
     
-    <form method="get" action="/topics/">
+    <a href="/topics/">Create New Topic</a>
+    <ul>
+        {% for topic in result %}
+        <li>
+            <h3><a href="/topics/{{ topic.id }}">{{ topic.title }}</a></h3>
+            <p>Created On: {{ topic.created_on.strftime("%Y-%m-%d %H:%M:%S") }}</p>
+            <p>Replies: {{ topic.replies }}</p>
+            <p>Locked: {{ topic.is_locked }}</p>
+                
+        </li>
+        {% endfor %}
+    </ul>
+
+    <form style="text-align: right;", method="get" action="/result/">
+        {% if search %}
+        <input type="text" name="search" value="{{ search }}" placeholder="Search">
+        {% else %}
         <input type="text" name="search" placeholder="Search">
+        {% endif %}
+        
+        
+        <div>
+            <input type="checkbox" name="include_topics" id="include_topics" value="true" checked>
+            <label for="include_topics">Include Topics</label>
+        </div>
+        <div>
+            <input type="checkbox" name="include_replies" id="include_replies" value="true" checked>
+            <label for="include_replies">Include Replies</label>
+        </div>
+        <div>
+            <input type="radio" name="sort_oldest_first" id="sort_newest_first" value="false" checked>
+            <label for="sort_newest_first">Newest First</label>
+        </div>
+        <div>
+            <input type="radio" name="sort_oldest_first" id="sort_oldest_first" value="true">
+            <label for="sort_oldest_first">Oldest First</label>
+        </div>
+        <div>
+            <input type="radio" name="page" id="page" value=1>
+            <label for="page">Page 1</label>
+        </div>
+        
         <button type="submit">Search</button>
     </form>
-
-    <ul>
-        {% for item in data %}
-            {% if item['type'] == 'Topic' %}
+ 
+     <ul>
+        {% for item in result %}
+            {% if include_topics %}
                 <li>
                     <a href="/topics/{{ item['id'] }}">{{ item['title'] }}</a>
-                    <p>{{ item['description'] }}</p>
-                    <p>Created at: {{ item['created_at'] }}</p>
+                    <p>{{ item['text'] }}</p>
+                    <p>Created at: {{ item['created_on'] }}</p>
                 </li>
-            {% else %}
-                {% if include_replies %}
-                    <li>
-                        <p>Reply to: <a href="/topics/{{ item['topic_id'] }}">{{ item['title'] }}</a></p>
-                        <p>{{ item['content'] }}</p>
-                        <p>Created at: {{ item['created_at'] }}</p>
-                    </li>
-                {% endif %}
+            {% endif %}
+            {% if include_replies %}
+                <li>
+                    <p>Reply to: <a href="/topics/{{ item['topic_id'] }}">{{ item['title'] }}</a></p>
+                    <p>{{ item['content'] }}</p>
+                    <p>Created at: {{ item['created_on'] }}</p>
+                </li>
             {% endif %}
         {% endfor %}
     </ul>
 
-    <a href="/topics/new">Create New Topic</a>
 </body>
 </html>

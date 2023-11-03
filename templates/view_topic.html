@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>BG Daddy Topics</title>
+        <style>
+            h1 {
+            display: inline-block;
+            text-align: center;
+            background-color:rgba(176, 224, 230, 0.479);
+        }
+        h3 {
+            display: inline-block;
+            border: 1px solid rgb(0, 0, 0); /* Add a solid black border around the h1 element */
+            padding: 10px; /* Add padding to give some spacing between the text and the border */
+        }
+        </style>
+</head>
+<body>
+    <h1>BG Daddy</h1>
+    <h2>Title: {{ topic.title }}
+        <p>posted: {{ topic.created_on.strftime("%Y-%m-%d %H:%M:%S") }} 
+        Locked: {{ topic.is_locked }}
+        </p>
+    </h2>
+    <h3>Text: {{topic.text}}</h3>
+    
+    
+    <p style="font-size: large;"><strong>Replies</strong>: 
+        <ul>
+            {% for reply in topic.replies %}
+            <li>
+                <h3>Content: {{ reply.content }}</a></h3>
+                <p>Created by: {{ reply.username }}, {{ reply.created }}</p>
+                    
+            </li>
+            {% endfor %}
+        </ul>
+    </p>
+    <a href="/topics/count/{{ category_id }}">Topics in category</a><br>
+    <a href="/replies/{{ topic.id }}">Create New Reply</a>
+</body>
+</html>
