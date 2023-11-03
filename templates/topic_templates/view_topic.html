@@ -3,7 +3,7 @@
     <head>
         <title>BG Daddy Topics</title>
         <style>
-            h1 {
+        h1 {
             display: inline-block;
             text-align: center;
             background-color:rgba(176, 224, 230, 0.479);
@@ -36,7 +36,7 @@
             {% endfor %}
         </ul>
     </p>
-    <a href="/topics/count/{{ category_id }}">Topics in category</a><br>
+    <a href="/topics/count/{{ topic.category_id }}">Topics in category</a><br>
     <a href="/replies/{{ topic.id }}">Create New Reply</a>
 </body>
 </html>

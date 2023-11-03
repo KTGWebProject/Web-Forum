@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BG Daddy</title>
+</head>
+<body>
+    <h1>BG Daddy Topics</h1>
+
+    <form style="text-align: center;", method="get" action="/topics/">
+        {% if search %}
+        <input type="text" name="search" value="{{ search }}" placeholder="Search">
+        {% else %}
+        <input type="text" name="search" placeholder="Search">
+        {% endif %}
+        
+        
+        <div>
+            <input type="checkbox" name="include_topics" id="include_topics" value="true" checked>
+            <label for="include_topics">Include Topics</label>
+        </div>
+        <div>
+            <input type="checkbox" name="include_replies" id="include_replies" value="true" checked>
+            <label for="include_replies">Include Replies</label>
+        </div>
+        <div>
+            <input type="radio" name="sort_oldest_first" id="sort_newest_first" value="false" checked>
+            <label for="sort_newest_first">Newest First</label>
+        </div>
+        <div>
+            <input type="radio" name="sort_oldest_first" id="sort_oldest_first" value="true">
+            <label for="sort_oldest_first">Oldest First</label>
+        </div>
+        <div>
+            <input type="radio" name="page" id="page" value=1>
+            <label for="page">Page 1</label>
+        </div>
+        
+        <button type="submit">Search</button>
+    </form>
+    <ul>
+    {% for item in result %}
+        {% if include_topics %}
+            <li>
+                <a href="/topics/{{ item['id'] }}">{{ item['title'] }}</a>
+                <p>{{ item['text'] }}</p>
+                <p>Created at: {{ item['created_on'] }}</p>
+            </li>
+        {% endif %}
+        {% if include_replies %}
+            <li>
+                <a href="/topics/{{ item['id'] }}">{{ item['title'] }}</a>
+                <p>{{ item['content'] }}</p>
+                <p>Created at: {{ item['created_on'] }}</p>
+            </li>
+        {% endif %}
+    {% endfor %}
+    </ul>
+
+
+</body>
+</html>
