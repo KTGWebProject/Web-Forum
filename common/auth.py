@@ -18,7 +18,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 
 SECRET_KEY = os.environ.get("FORUM_SECRET_KEY")
 ALGORITHM = os.environ.get("FORUM_ALGORITHM")
-ACCESS_TOKEN_EXPIRE_MINUTES = 1
+ACCESS_TOKEN_EXPIRE_MINUTES = 2
 REFRESH_TOKEN_EXPIRE_MINUTES = 3000
 DUMMY_ACCESS_TOKEN = "dummy_access_token"
 
@@ -171,8 +171,13 @@ class TokenValidationMiddleware(BaseHTTPMiddleware):
             else:
                 try:
                     decoded_access_token = jwt.decode(access_token, SECRET_KEY, algorithms=[ALGORITHM])
-                    if decoded_access_token.get("exp") > int(time.time()):
-                        response = await call_next(request)
-                        return response     
+                    if decoded_access_token:
+                        if decoded_access_token.get("exp") > int(time.time()):
+                            response = await call_next(request)
+                            return response   
+                        else:
+                            return RedirectResponse(url=f"/users/token/refresh?redirect={request.url.path}&access_token={access_token}&refresh_token={refresh_token}", status_code=303)      
+                    else:
+                        return RedirectResponse(url=f"/users/token/refresh?redirect={request.url.path}&access_token={access_token}&refresh_token={refresh_token}", status_code=303)
                 except Exception as exc:
                     return RedirectResponse(url=f"/users/token/refresh?redirect={request.url.path}&access_token={access_token}&refresh_token={refresh_token}", status_code=303)   
