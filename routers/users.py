@@ -73,8 +73,11 @@ def continue_as_guest():
     return response
 
 
-@users_router.post("/token/refresh", response_model=auth.Token, responses={401: {"detail": "string"}})
-async def refresh_token(request: Request, redirect: str = "/"):
+@users_router.get("/token/refresh", response_model=auth.Token, responses={401: {"detail": "string"}})
+async def refresh_token(request: Request, 
+                        redirect: str = Query("/"),
+                        access_token: str = Query(),
+                        refresh_token: str = Query()):
     '''
     parameters: JWT access token - header, JWT refresh token - header
     act: - check whether JWT refresh token is valid and matching JWT access token
@@ -83,13 +86,11 @@ async def refresh_token(request: Request, redirect: str = "/"):
                         401 Unauthorized ("Could not validate credentials") -
                         when invalid refresh token or not matching tokens)
     '''
-    access_token = request.cookies.get("access_token")
-    refresh_token = request.cookies.get("refresh_token")
     user =  await auth.refresh_access_token(access_token, refresh_token)
     tokens = auth.token_response(user)
     response = RedirectResponse(url=redirect)
-    response.set_cookie(key="access_token", value=tokens.get("access_token"), httponly=True)
-    response.set_cookie(key="refresh_token", value=tokens.get("refresh_token"), httponly=True)
+    response.set_cookie(key="access_token", value=tokens["access_token"], httponly=True)
+    response.set_cookie(key="refresh_token", value=tokens["refresh_token"], httponly=True)
     return response
 
 @users_router.post("/admin", response_model = int, responses={400: {"detail": "string"}, 401: {"detail": "string"}})

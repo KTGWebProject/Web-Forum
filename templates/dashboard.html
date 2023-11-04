@@ -45,7 +45,7 @@
     {% if user_role == 'admin' %}
     <h3>Admin Access:</h3>
     <ul>
-        <li><a href="/users/adminchange">Admin User Management</a></li>
+        <li><a href="/users/adminchange">Change User to Admin</a></li>
         <li><a href="/categories/{{ cat_id }}/privileged_users">Privileged Users of Category</a></li>
         <li><a href="/categories/create">Create Category</a></li>
         <li><a href="/categories/{{ cat_id }}/privacy">Set Category Privacy</a></li>
@@ -53,7 +53,7 @@
         <li><a href="/categories/{{ cat_id }}/access/write">Set Category Write Access</a></li>
         <li><a href="/categories/edit/{{ cat_id }}">Edit Category</a></li>
         <li><a href="/categories/{{ cat_id }}/access/delete">Delete Category Access</a></li>
-        <li><a href="/users/admin">Admin User Management</a></li>
+        <!-- <li><a href="/users/admin">Admin User Management</a></li>  -->
         <li> Privileged Users of Category </p>
         </li>
         <form id="myForm" method="get" style="display: flex; align-items: center;">

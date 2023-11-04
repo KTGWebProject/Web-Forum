@@ -18,7 +18,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 
 SECRET_KEY = os.environ.get("FORUM_SECRET_KEY")
 ALGORITHM = os.environ.get("FORUM_ALGORITHM")
-ACCESS_TOKEN_EXPIRE_MINUTES = 3000
+ACCESS_TOKEN_EXPIRE_MINUTES = 1
 REFRESH_TOKEN_EXPIRE_MINUTES = 3000
 DUMMY_ACCESS_TOKEN = "dummy_access_token"
 
@@ -136,7 +136,6 @@ async def refresh_access_token(access_token: str, refresh_token: str):
     )
     try:
         payload = jwt.decode(refresh_token, SECRET_KEY, algorithms=[ALGORITHM])
-        payload_access_token = jwt.decode(access_token, SECRET_KEY, algorithms=[ALGORITHM])
         modified_access_token = payload.get("access_token") 
         try:
             verified_access_token = verify_password(access_token, modified_access_token) 
@@ -144,11 +143,11 @@ async def refresh_access_token(access_token: str, refresh_token: str):
             raise credentials_exception
         if not verified_access_token:
             raise credentials_exception
-        username: str = payload_access_token.get("sub")
+        username: str = payload.get("sub")
         if username is None:
             raise credentials_exception
         token_data = TokenData(username=username)
-    except JWTError:
+    except JWTError as err:
         raise credentials_exception
     user = find_user(username=token_data.username)
     if user is None:
@@ -157,12 +156,13 @@ async def refresh_access_token(access_token: str, refresh_token: str):
 
 class TokenValidationMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
-        bypass = ["/users/token", "/users", "/users/guest"]
+        bypass = ["/users/token", "/users", "/users/guest", "/users/token/refresh"]
         if request.url.path in bypass:
             response = await call_next(request)
             return response
         else:
             access_token = request.cookies.get("access_token")
+            refresh_token = request.cookies.get("refresh_token")
             
             if not access_token or access_token == DUMMY_ACCESS_TOKEN:
                 response = await call_next(request)
@@ -175,5 +175,4 @@ class TokenValidationMiddleware(BaseHTTPMiddleware):
                         response = await call_next(request)
                         return response     
                 except Exception as exc:
-                    print(exc)
-                    return RedirectResponse(url=f"/users/token/refresh?redirect={request.url.path}")   
+                    return RedirectResponse(url=f"/users/token/refresh?redirect={request.url.path}&access_token={access_token}&refresh_token={refresh_token}", status_code=303)   
