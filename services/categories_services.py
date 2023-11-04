@@ -247,7 +247,7 @@ def change_category_privacy(cat_id: int, privacy_status: str):
     if query_result == 0:
         raise HTTPException(
             status_code=responses.NotFound().status_code,
-            detail=f"Category with id '{cat_id}' doesnt exist or it's status is already private!",
+            detail=f"Category with id '{cat_id}' doesnt exist or it's status is already {privacy_status}!",
         )
 
     else:
@@ -326,11 +326,13 @@ def revoke_access(user_id: int, cat_id: int):
     params = [cat_id, user_id]
 
     query_result = update_query(query, params)
-    
-    if query_result == 0:
-        raise HTTPException(
-            status_code=responses.NotFound().status_code,
-            detail=f"Category with id '{cat_id}' was not private or user with id '{user_id}' didn't have access!",
-        )
-    else:
-        return responses.OK(content=f"User with id:'{user_id}' lost his access to category with id:'{cat_id}'.")
+
+    # if query_result == 0:
+    #     raise HTTPException(
+    #         status_code=responses.NotFound().status_code,
+    #         detail=f"Category with id '{cat_id}' was not private or user with id '{user_id}' didn't have access!",
+    #     )
+    # else:
+    #     return responses.OK(content=f"User with id:'{user_id}' lost his access to category with id:'{cat_id}'.")
+
+    return responses.OK(content=f"If a user with the ID '{user_id}' previously had access to the category with ID '{cat_id}', they have already lost that access.")

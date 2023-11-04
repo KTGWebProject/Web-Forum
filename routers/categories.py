@@ -51,11 +51,17 @@ async def view_categories(
 async def get_create_category_form(request: Request):
     return templates.TemplateResponse("create_category_form.html", {"request": request})
 
+@categories_router.get("/set_category_privacy", response_class=HTMLResponse)
+async def set_category_privacy(request: Request):
+    return templates.TemplateResponse("set_privacy_form.html", {"request": request})
 
-@categories_router.get("/category_id", response_class=HTMLResponse)
-async def get_category_id(request: Request):
-    return templates.TemplateResponse("enter_category_id.html", {"request": request})
+@categories_router.get("/set_read_write_access", response_class=HTMLResponse)
+async def set_category_privacy(request: Request):
+    return templates.TemplateResponse("set_read_write_access.html", {"request": request})
 
+@categories_router.get("/revoke_user_access", response_class=HTMLResponse)
+async def set_category_privacy(request: Request):
+    return templates.TemplateResponse("revoke_user_access.html", {"request": request})
 
 @categories_router.get("/{cat_id}", response_model=list[Topic])
 async def view_topics_by_category_id(
@@ -132,12 +138,9 @@ async def create_category(
 
 @categories_router.post("/{cat_id}/privacy", status_code=status.HTTP_200_OK)
 async def change_privacy(
-    cat_id: Annotated[int, Path(ge=1)],
-    privacy_status: Annotated[
-        str, StringConstraints(pattern="^(private|non_private)$")
-    ],
     request: Request,
-):
+    cat_id: Annotated[int, Path(ge=1)],
+    privacy_status: str = Form(pattern="^(private|non_private)$")):
     token = request.cookies.get("access_token")
     user: User = await auth.get_current_user(token)
     if user.is_admin == 0:
@@ -146,61 +149,21 @@ async def change_privacy(
             detail="Not authorized to change the category status!",
         )
 
-    response = categories_services.change_category_privacy(cat_id, privacy_status)
-    
+    try:
+        response = categories_services.change_category_privacy(cat_id, privacy_status)
+    except:
+        return templates.TemplateResponse("return_change_privacy.html", {"request": request, "content": f"Category with id '{cat_id}' doesnt exist or it's status is already {privacy_status}!"}
+    )
+    return templates.TemplateResponse("return_change_privacy.html", {"request": request, "content": f"Category '{cat_id}' changed status to '{privacy_status}'."}
+    )
 
-@categories_router.put("/{cat_id}/access/read", status_code=status.HTTP_200_OK)
-async def give_user_read_access(
-    cat_id: Annotated[int, Path(ge=1)],
-    user_id: Annotated[int, Query(ge=1)],
-    token: Annotated[str, Depends(oauth2_scheme)],
-):
-    logged_user: User = await auth.get_current_user(token)
-    if logged_user.is_admin == 0:
-        raise HTTPException(
-            status_code=responses.Unauthorized().status_code,
-            detail="You are not admin! You are not authorized to give read access!",
-        )
-
-    return categories_services.give_read_access_to_user(user_id, cat_id)
-
-
-@categories_router.put("/{cat_id}/access/write", status_code=status.HTTP_200_OK)
-async def give_user_write_access(
-    cat_id: Annotated[int, Path(ge=1)],
-    user_id: Annotated[int, Query(ge=1)],
-    token: Annotated[str, Depends(oauth2_scheme)],
-):
-    logged_user: User = await auth.get_current_user(token)
-    if logged_user.is_admin == 0:
-        raise HTTPException(
-            status_code=responses.Unauthorized().status_code,
-            detail="You are not admin! You are not authorized to give write access!",
-        )
-
-    return categories_services.give_write_access_to_user(user_id, cat_id)
-
-
-@categories_router.patch("/{cat_id}")
-async def lock_category(
-    cat_id: Annotated[int, Path(ge=1)], token: Annotated[str, Depends(oauth2_scheme)]
-):
-    logged_user: User = await auth.get_current_user(token)
-    if logged_user.is_admin == 0:
-        raise HTTPException(
-            status_code=responses.Unauthorized().status_code,
-            detail="You are not admin! You are not authorized to lock categories!",
-        )
-
-    return categories_services.lock_category_by_id(cat_id)
-
-
-@categories_router.delete("/{cat_id}/access", status_code=status.HTTP_200_OK)
+@categories_router.post("/{cat_id}/access", status_code=status.HTTP_200_OK)
 async def revoke_user_access(
+    request: Request,
     cat_id: Annotated[int, Path(ge=1)],
-    user_id: Annotated[int, Query(ge=1)],
-    token: Annotated[str, Depends(oauth2_scheme)],
+    user_id: int = Form(ge=1),
 ):
+    token = request.cookies.get("access_token")
     logged_user: User = await auth.get_current_user(token)
     if logged_user.is_admin == 0:
         raise HTTPException(
@@ -208,4 +171,62 @@ async def revoke_user_access(
             detail="You are not admin! You are not authorized to revoke user access!",
         )
 
-    return categories_services.revoke_access(user_id, cat_id)
+    categories_services.revoke_access(user_id, cat_id)
+    
+    return templates.TemplateResponse("return_revoke_access.html", {"request": request, "content": f"If a user with the ID '{user_id}' previously had access to the category with ID '{cat_id}', they have already lost that access."})
+    
+@categories_router.post("/{cat_id}/access/read", status_code=status.HTTP_200_OK)
+async def give_user_read_access(
+    request: Request,
+    cat_id: Annotated[int, Path(ge=1)],
+    user_id: int = Form(ge=1),
+):
+    token = request.cookies.get("access_token")
+    logged_user: User = await auth.get_current_user(token)
+    if logged_user.is_admin == 0:
+        raise HTTPException(
+            status_code=responses.Unauthorized().status_code,
+            detail="You are not admin! You are not authorized to give read access!",
+        )
+    try:
+        categories_services.give_read_access_to_user(user_id, cat_id)
+    except:
+        return templates.TemplateResponse("return_crws_form.html", {"request": request, "content": f"Category with id '{cat_id}' is not private, user with id '{user_id}' is not valid user or he already has this access!"})
+    
+    return templates.TemplateResponse("return_crws_form.html", {"request": request, "content": f"'User '{user_id}' can now only read topics in category '{cat_id}'."})
+
+@categories_router.post("/{cat_id}/access/write", status_code=status.HTTP_200_OK)
+async def give_user_write_access(
+    request: Request,
+    cat_id: Annotated[int, Path(ge=1)],
+    user_id: int = Form(ge=1),
+):
+    token = request.cookies.get("access_token")
+    logged_user: User = await auth.get_current_user(token)
+    if logged_user.is_admin == 0:
+        raise HTTPException(
+            status_code=responses.Unauthorized().status_code,
+            detail="You are not admin! You are not authorized to give write access!",
+        )
+    
+    try:
+        categories_services.give_write_access_to_user(user_id, cat_id)
+    except:
+        return templates.TemplateResponse("return_crws_form.html", {"request": request, "content": f"Category with id '{cat_id}' is not private, user with id '{user_id}' is not valid user or he already has this access!"})
+
+    return templates.TemplateResponse("return_crws_form.html", {"request": request, "content": f"'User '{user_id}' can now write topics in category '{cat_id}'."})
+
+# @categories_router.patch("/{cat_id}")
+# async def lock_category(
+#     cat_id: Annotated[int, Path(ge=1)], token: Annotated[str, Depends(oauth2_scheme)]
+# ):
+#     logged_user: User = await auth.get_current_user(token)
+#     if logged_user.is_admin == 0:
+#         raise HTTPException(
+#             status_code=responses.Unauthorized().status_code,
+#             detail="You are not admin! You are not authorized to lock categories!",
+#         )
+
+#     return categories_services.lock_category_by_id(cat_id)
+
+

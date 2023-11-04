@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Change Access</title>
+</head>
+
+<body>
+
+    <h1>Change Access</h1>
+
+    <form id="accessForm" method="post">
+        <label for="cat_id">Category ID:</label>
+        <input type="number" id="cat_id" name="cat_id" required><br>
+
+        <label for="access_type">Access Type:</label>
+        <select id="access_type" name="access_type" required>
+            <option value="read">Read Access</option>
+            <option value="write">Write Access</option>
+        </select><br>
+
+        <label for="user_id">User ID:</label>
+        <input type="number" id="user_id" name="user_id" required><br>
+
+        <button type="submit">Change Access</button>
+    </form>
+
+    <script>
+        document.getElementById('accessForm').addEventListener('submit', function(event) {
+            event.preventDefault();  // Prevent the form from submitting normally
+
+            // Get the selected category ID, access type, and user ID
+            var catId = document.getElementById('cat_id').value;
+            var accessType = document.getElementById('access_type').value;
+            var userId = document.getElementById('user_id').value;
+
+            // Determine the correct endpoint based on access type
+            var endpoint;
+            if (accessType === 'read') {
+                endpoint = '/categories/' + catId + '/access/read';
+            } else if (accessType === 'write') {
+                endpoint = '/categories/' + catId + '/access/write';
+            }
+
+            // Update the form action with the correct endpoint
+            document.getElementById('accessForm').action = endpoint;
+
+            // Now submit the form
+            document.getElementById('accessForm').submit();
+        });
+    </script>
+
+</body>
+
+</html>
