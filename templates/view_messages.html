@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Received Messages</title>
+</head>
+<body>
+
+<h1 style="text-align: center;">BG Daddy Received Messages</h1>
+{% if users == "" %}
+<ul>
+    {% for user in messages %}
+        <li> 
+            {% if user%}
+            {% if user[0].author != main_user%}
+            <h3 style="text-align: left;"> Messages exchanged with {{ user[0].author }}</h3>
+            {%else%}
+            <h3 style="text-align: left;"> Messages exchanged with {{ user[0].recipient }}</h3>
+            {%endif%}
+            <div>
+                <ul>
+                {% for item in user %}
+                <p> message sent on: {{ item.created_on.strftime("%Y-%m-%d %H:%M:%S") }}</p>
+                <p> subject: {{ item.subject }}</p>
+                <p> content: {{ item.content }}</p>
+                <p> author: {{ item.author }}</p>
+                <p> recipient: {{ item.recipient }}</p>
+                </ul>
+                <a href="/messages/template?id_parent_message={{ item.id }}&old_content={{item.content}}&previous_author={{item.author}}&previous_subject={{item.subject}}">Reply to Message</a>
+                {%endfor%}
+            </div>
+        </li>
+        {% endif %}
+    {% endfor %}
+</ul>
+{% else %}
+<ul>
+    {% for user in messages %}
+        
+        <li>
+            {% if user%}
+            {% if user[0]%}
+            {% if user[0][0].author != main_user%}
+            <h3 style="text-align: left;"> Messages exchanged with {{ user[0][0].author }}</h3>
+            {%else%}
+            <h3 style="text-align: left;"> Messages exchanged with {{ user[0][0].recipient }}</h3>
+            {%endif%}
+            <div>
+                <ul>
+                {% for subjects in user %}
+                <h4 style="text-align: left;"> Subject {{ subjects[0].subject }}</h4>
+                    {% for item in subjects %}
+                    <p> message sent on: {{ item.created_on.strftime("%Y-%m-%d %H:%M:%S") }}</p>
+                    <p> subject: {{ item.subject }}</p>
+                    <p> content: {{ item.content }}</p>
+                    <p> author: {{ item.author }}</p>
+                    <p> recipient: {{ item.recipient }}</p>
+                    </ul>
+                    <a href="/messages/template?id_parent_message={{ item.id }}&old_content={{item.content}}&previous_author={{item.author}}&previous_subject={{item.subject}}">Reply to Message</a>
+                    {%endfor%}
+                {%endfor%}
+            </div>
+        </li>
+    {%endif%}
+    {%endif%}
+    {% endfor %}
+</ul>
+{% endif %}
+{% if paginated%}
+<form style="text-align: left;" method="get" action="/messages">
+    <input type="hidden" name="users" id="users" value="{{ users }}">
+
+    <input type="hidden" name="sort_oldest_first" id="sort_oldest_first" value="{{ sort }}">
+
+    <input type="hidden" name="paginated" id="paginated" value="{{ paginated}}">
+
+    <input type="hidden" name="page" id="page" value="{{ page + 1}}">
+
+    <button type="submit">Next Page</button>
+</form>
+{% endif %}
+<a href="/messages/viewtemplate">Back to View Messages</a>
+<br>
+<a href="/users/dashboard">Main Menu</a>
+</body>
+</html>

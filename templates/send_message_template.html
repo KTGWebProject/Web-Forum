@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BG Daddy Send Message</title>
+</head>
+<body>
+    <h1 style="text-align: center;">BG Daddy Send Message</h1>
+    <br>
+    <br>  
+    <!-- <h2 style="text-align: center;">{{message}}</h2> -->
+    <div>
+        <h3 style="text-align: left;">{{old_content}}</h3>
+        <form action="/messages" method="post">
+            <label for="recipients">Recipients:</label>
+            <input type="text" id="recipients" name="recipients" value="{{ previous_author}}" required>
+            <br>
+            <label for="subject">subject:</label>
+            <input type="text" id="subject" name="subject" value="{{ previous_subject}}" required>
+            <br>
+            <label for="text">content:</label>
+            <textarea id="content" name="content" required rows="5" cols="50"></textarea>
+            <input type="hidden" id="id_parent_message" name="id_parent_message" value={{id_parent_message}}>
+            <button type="submit">Send Message</button>
+        </form>
+    </div>    
+</body>
+</html>

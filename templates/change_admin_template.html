@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BG Daddy Set Admin</title>
+</head>
+<body>
+    <h1 style="text-align: center;">BG Daddy Set Admin</h1>
+    <br>
+    <br>  
+    <h2 style="text-align: center;">{{message}}</h2>
+    <div>
+        <form action="/users/admin" method="post">
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" required>
+            <button type="submit">Change to Admin</button>
+        </form>
+    </div>    
+</body>
+</html>

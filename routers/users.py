@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Header, status, Request
+from fastapi import APIRouter, Depends, HTTPException, Header, status, Request, Form, Query
 from fastapi.security import OAuth2PasswordRequestForm
 from models.user import User
 import services.users_services as users_services
@@ -92,8 +92,8 @@ async def refresh_token(request: Request, redirect: str = "/"):
     response.set_cookie(key="refresh_token", value=tokens.get("refresh_token"), httponly=True)
     return response
 
-@users_router.put("/admin", response_model = int, responses={400: {"detail": "string"}, 401: {"detail": "string"}})
-async def get_user(request: Request, to_change:dict):
+@users_router.post("/admin", response_model = int, responses={400: {"detail": "string"}, 401: {"detail": "string"}})
+async def get_user(request: Request, username: str = Form(...)):
     '''
     parameters: JWT access token as Ouath2 authorization header, username in a dict {"username": "xyz"} in the body
                 of user to be set as admin
@@ -111,11 +111,12 @@ async def get_user(request: Request, to_change:dict):
     access_token = request.cookies.get("access_token")
     user: User = await auth.get_current_user(access_token)    
     if user.is_admin == 0:
-        raise HTTPException(status_code=responses.Unauthorized().status_code, detail= "Not authorized to set admin priviliges")
-    update_user = auth.find_user(to_change.get("username"))
+        return RedirectResponse(url="/users/dashboard", status_code=303)
+    update_user = auth.find_user(username)
     if not update_user:
-        raise HTTPException(status_code=responses.BadRequest().status_code, detail= "The username provided does not exist")
-    # return users_services.set_admin(update_user.id) - nned to change to template
+        return RedirectResponse(url="/users/adminchange?message=Wrong username provided", status_code=303,)
+    users_services.set_admin(update_user.id)
+    return templates.TemplateResponse("changed_to_admin.html", context={"request": request, "username": username})
 
 @users_router.get("/dashboard")
 async def get_functionality(request: Request):
@@ -130,7 +131,18 @@ async def get_functionality(request: Request):
             user_role = "registered"
     return templates.TemplateResponse("dashboard.html", context={"request": request, "user_role": user_role})
         
-    
+@users_router.get("/adminchange")
+async def get_functionality(request: Request, message: str = Query("")):
+    access_token = request.cookies.get("access_token")
+    if access_token == auth.DUMMY_ACCESS_TOKEN:
+        response = RedirectResponse(url="/users/dashboard", status_code=303)
+    else:
+        user = await auth.get_current_user(access_token)
+        if user.is_admin == 1:
+            return templates.TemplateResponse("change_admin_template.html", context={"request": request, "message": message})
+        else:
+            response = RedirectResponse(url="/users/dashboard", status_code=303)
+    return response    
     
         
 

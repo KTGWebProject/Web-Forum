@@ -72,10 +72,12 @@ async def get_messages_user(**kwargs):
         
         if sort:
             second_sql_query += ' Desc'
+        else:
+            second_sql_query += ' Asc'
         
         if paginated:
             limit = 3
-            offset = limit*(page - 1)
+            offset = limit*(int(page) - 1)
             second_sql_query += f' LIMIT {limit} OFFSET {offset}'
         
         conversations = []
@@ -89,20 +91,10 @@ async def get_messages_user(**kwargs):
         
         full_conversations.append(conversations)
     return full_conversations   
-
-async def get_chat_service(user_id: int, since:datetime):
-    sql_query = '''select m.id_message, us.username, m.subject, m.content, m.created_on, m.id_parent_message 
-        from messages m 
-        join users_has_messages u on m.id_message = u.id_message 
-        join users us on m.id_author = us.id_user 
-        where m.created_on >=? and u.id_recipient =?'''
-    
-    return [MessageResponseModelChat.get_response_chat(*row) 
-            for row in read_query(sql_query,(datetime.strptime(str(since), "%Y-%m-%d %H:%M:%S"), user_id))]
         
         
-async def post_message(user_id: int, message: Message, recipients: set[str]):
-    usernames_lst = sorted(list(recipients))
+async def post_message(user_id: int, recipients: str, subject: str, content: str, id_parent_message: int|None = None):
+    usernames_lst = recipients.split(", ")
     find_user_ids_sql_query = '''select id_user 
         from users 
         where username = ?'''
@@ -112,27 +104,31 @@ async def post_message(user_id: int, message: Message, recipients: set[str]):
     counterparties = read_query(find_user_ids_sql_query, tuple(usernames_lst))     
     if not counterparties:
         raise HTTPException(responses.NotFound().status_code, detail="No such user(s)") 
-    if message.id_parent_message is not None:
-        reply_to_check = read_query('select id_message from messages where id_message=?',(message.id_parent_message,))
+    if id_parent_message is not None:
+        reply_to_check = read_query('select id_message from messages where id_message=?',(id_parent_message,))
     else:
         reply_to_check = None
-    if not message.created_on:
-        created_on = datetime.utcnow()
-    else:
-        created_on = message.created_on
+    created_on = datetime.utcnow()
     if not reply_to_check:
         sql_insert_message='''insert into messages(content, created_on, subject, id_author) values(?,?,?,?)'''
-        sql_params =(message.content, created_on, message.subject, user_id)
+        sql_params =(content, created_on, subject, user_id)
     else:
         sql_insert_message='''insert into messages(content, created_on, subject, id_parent_message, id_author) values(?,?,?,?,?)'''
-        sql_params =(message.content, created_on, message.subject, message.id_parent_message, user_id)
+        sql_params =(content, created_on, subject, id_parent_message, user_id)
     message_id = insert_query(sql_insert_message, sql_params)
     
     for counterparty in counterparties:
         insert_query('insert into users_has_messages (id_recipient, id_message) values(?,?)', (counterparty[0], message_id))
     return message_id
 
-    
+def flatten(nested_list):
+    flat_list = []
+    for item in nested_list:
+        if isinstance(item, list):
+            flat_list.extend(flatten(item))
+        else:
+            flat_list.append(item)
+    return flat_list   
     
     
     

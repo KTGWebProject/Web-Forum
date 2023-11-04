@@ -35,16 +35,15 @@
         <li><a href="/replies/choose_best/{{ topic_id }}/reply/{{ reply_id }}">Choose Best Reply</a></li>
         <li><a href="/replies/vote/{{ reply_id }}/reply/{{ topic_id }}">Vote on Reply</a></li>
         <li><a href="/replies/edit/{{ topic_id }}/reply/{{ reply_id }}">Edit Reply</a></li>
-        <li><a href="/messages/">Messages List</a></li>
-        <li><a href="/messages/specified">Specified Messages</a></li>
-        <li><a href="/messages/create">Create Message</a></li>
+        <li><a href="/messages/viewtemplate">View Messages</a></li>
+        <li><a href="/messages/template">Create Message</a></li>
     </ul>
 {% endif %}
 
 {% if user_role == 'admin' %}
     <h3>Admin Access:</h3>
     <ul>
-        <li><a href="/users/admin">Admin User Management</a></li>
+        <li><a href="/users/adminchange">Admin User Management</a></li>
         <li><a href="/categories/{{ cat_id }}/privileged_users">Privileged Users of Category</a></li>
         <li><a href="/categories/create">Create Category</a></li>
         <li><a href="/categories/{{ cat_id }}/privacy">Set Category Privacy</a></li>

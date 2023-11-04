@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BG Daddy View Messages</title>
+</head>
+<body>
+    <h1 style="text-align: center;">BG Daddy View Messages</h1>
+    <br>
+    <br>  
+        
+    <form style="text-align: left;", method="get" action="/messages">
+        <div> 
+            <input type="text" name="users" id="users" >
+            <label for="users">Specify Users (Optional)</label>
+        </div>
+        <div>
+            <input type="checkbox" name="sort" id="sort" value="False">
+            <label for="sort">Sort oldest first</label>
+        </div>
+        <div>
+            <input type="checkbox" name="paginated" id="paginated" value="True">
+            <label for="paginated">Show a few</label>
+        </div>
+                
+        <button type="submit">Search</button>
+    </form>
+
+
+</body>
+</html>
