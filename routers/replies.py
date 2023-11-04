@@ -1,6 +1,8 @@
-from fastapi import APIRouter, Depends, Query, Path, Response, status
+from fastapi import APIRouter, Depends, Query, Path, Request, Response, status
 from datetime import datetime
 from typing import Annotated
+from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
 from common.auth import get_current_user, oauth2_scheme
 from models.reply import Reply, Vote
 from common.reply_responses import (create_reply_response, choose_best_reply_response,
@@ -9,6 +11,13 @@ from common.responses import InternalServerError, Locked, NotFound, BestReplyExi
 from services import replies_services as rs
 
 replies_router = APIRouter(prefix='/replies')
+templates = Jinja2Templates(directory="templates")
+
+
+@replies_router.get('/create', response_class=HTMLResponse)
+async def search(request: Request):
+    return templates.TemplateResponse("reply_templates/create_reply.html", {"request": request})
+
 
 @replies_router.post('/{topic_id}', status_code=status.HTTP_200_OK, responses=create_reply_response)
 async def create_reply(

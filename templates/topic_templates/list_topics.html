@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BG Daddy</title>
+</head>
+<body>
+    <button onclick="window.location.href = '//127.0.0.1:8000/users/dashboard';">Home</button>
+    
+    <h1> BG Daddy Topics</h1>
+    
+    <button style="text-align: center;" onclick="location='/topics/search'" type="button">Search</button>
+    <button style="text-align: center;" onclick="location='/topics/create'" type="button">Create New Topic</button>
+    <ul>
+        {% for item in topics %}
+        <li>
+            {% if item['type'] == 'Topic' %}
+                <p>Created On: {{ item.created_on.strftime("%Y-%m-%d %H:%M:%S") }}</p>
+                <p>Replies: {{ item.replies }}</p>
+                <p>Locked: {{ item.is_locked }}</p>
+            {% else %}
+                <p>Reply to topic: {{ item.topic_id }}</p>
+                <p>Created On: {{ item.created_on.strftime("%Y-%m-%d %H:%M:%S") }}</p>
+                <p>Content: {{ item.content }}</p>
+                <p>Is best: {{ item.is_best }}</p>
+                <p>Upvotes: {{ item.upvotes }} Downvotes: {{ item.downvotes }}</p>
+            {% endif %}
+        </li>
+        {% endfor %}
+    </ul>
+
+</body>
+</html>
+
+    

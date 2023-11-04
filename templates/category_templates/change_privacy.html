@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Change Category Privacy</title>
+</head>
+
+<body>
+
+    <h1>Change Category Privacy</h1>
+
+    <form action="/categories/{{ cat_id }}/privacy" method="post">
+        <label for="privacy_status">Privacy Status:</label>
+        <select id="privacy_status" name="privacy_status" required>
+            <option value="private">Private</option>
+            <option value="non_private">Non-Private</option>
+        </select><br>
+
+        <button type="submit">Change Privacy</button>
+    </form>
+
+</body>
+
+</html>

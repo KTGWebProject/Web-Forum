@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privileged Users</title>
+</head>
+<body>
+    <h1>Privileged Users for Category {{ cat_id }}</h1>
+    <table border="1">
+        <tr>
+            <th>Username</th>
+            <th>Access Level</th>
+        </tr>
+        {% for user in privileged_users %}
+            <tr>
+                <td>{{ user.username }}</td>
+                <td>{{ user.access_level }}</td>
+            </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>

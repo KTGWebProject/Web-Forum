@@ -1,8 +1,9 @@
 from datetime import datetime
+from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from common.auth import get_current_user
 from typing import Annotated
-from fastapi import APIRouter, Query, Path, Response, status, Request
+from fastapi import APIRouter, Form, Query, Path, Response, status, Request
 from models.reply import Reply
 from models.topic import Topic
 from common.responses import BadRequest, Locked, NotFound
@@ -21,7 +22,7 @@ async def view_all(
     search: Annotated[str | None, Query(min_length=3, max_length=30)] = None,
     include_topics: Annotated[bool, Query] = True,
     include_replies: Annotated[bool, Query] = True,
-    sort_oldest_first: Annotated[bool, Query] = False,
+    sort_latest_first: Annotated[bool, Query] = True,
     paginated: Annotated[bool, Query] = False,
     page: Annotated[int, Query] = 1,
     ) -> list[Topic|Reply]: 
@@ -34,29 +35,41 @@ async def view_all(
         search = list(set(word for word in search.split()).difference(blacklist))
 
     try:
-        user = get_current_user(token)
+        user = await get_current_user(token)
         result = ts.view_all_topics(user=user, 
                                     search_in_title=search, 
                                     include_topics=include_topics, 
                                     include_replies=include_replies, 
-                                    sort_by_date=sort_oldest_first, 
+                                    sort_by_date=sort_latest_first, 
                                     paginated=paginated, 
                                     default_page=page) 
     except:
         result = ts.view_all_topics(search_in_title=search, 
                                     include_topics=include_topics, 
                                     include_replies=include_replies, 
-                                    sort_by_date=sort_oldest_first, 
+                                    sort_by_date=sort_latest_first, 
                                     paginated=paginated, 
                                     default_page=page
                                     )
-    return templates.TemplateResponse("list_topics.html", {"request": request, "result": result})
+    return templates.TemplateResponse("topic_templates/list_topics.html", {"request": request, "topics": result})
+
+
+@topics_router.get('/search', response_class=HTMLResponse)
+async def search(request: Request):
+    return templates.TemplateResponse("topic_templates/search_topics.html", {"request": request})
+
+
+@topics_router.get('/create', response_class=HTMLResponse)
+async def get_create_new_topic_form(request: Request):
+        return templates.TemplateResponse("topic_templates/create_topic.html", {"request": request})
+
 
 @topics_router.get('/count/{category_id}', responses=count_topics_response)
 def topics_count(category_id: int, request: Request,) -> int:
     '''Helping function to define the pages in the forum client'''
     topics = ts._count_topics(category_id)[0]
-    return templates.TemplateResponse("count_topics.html", {"request": request, "topics": topics})
+    return templates.TemplateResponse("topic_templates/count_topics.html", {"request": request, "topics": topics})
+
 
 @topics_router.get('/{id}', response_model=Topic, responses=view_topic_by_id_response) 
 def view_topic(
@@ -69,7 +82,7 @@ def view_topic(
     topic = ts.get_topic_by_id(id)
     
     if topic:
-        return templates.TemplateResponse("view_topic.html", {"request": request, "topic": topic})  
+        return templates.TemplateResponse("topic_templates/view_topic.html", {"request": request, "topic": topic})  
     else:
         return NotFound(content=f'Topic with id {id} is not found')
 
@@ -77,9 +90,9 @@ def view_topic(
 @topics_router.post('/', status_code=status.HTTP_201_CREATED, responses=create_topic_response)
 async def create_topic(
     request: Request,
-    title: str,
-    text: str,
-    category_id: int
+    title: str = Form(),
+    text: str = Form(),
+    category_id: int = Form()
     ) -> Topic or BadRequest:
     ''' requires authentication token '''
     token = request.cookies.get("access_token")
@@ -92,13 +105,20 @@ async def create_topic(
         category_id=category_id, 
         author_id=user.id
     )
-    if ts.user_has_write_access(new_topic, user):
+    if not ts.topic_is_in_a_private_category(new_topic):
         try:
             ts.create_topic(new_topic)
         except mdb.IntegrityError as ie:
             return BadRequest(content=str(ie))
-    
-        return templates.TemplateResponse("create_topic.html", {"request": request, "new_topic": new_topic})
+
+        return templates.TemplateResponse("topic_templates/create_topic.html", {"request": request, "new_topic": new_topic})
+    elif ts.user_has_write_access(new_topic, user):
+        try:
+            ts.create_topic(new_topic)
+        except mdb.IntegrityError as ie:
+            return BadRequest(content=str(ie))
+
+        return templates.TemplateResponse("topic_templates/create_topic.html", {"request": request, "new_topic": new_topic})
     
     return Response(
                     status_code=status.HTTP_403_FORBIDDEN, 

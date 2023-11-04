@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Category</title>
+</head>
+
+<body>
+
+    <h1>Create a New Category</h1>
+
+    <form action="/categories/" method="post">
+        <label for="name">Category Name:</label>
+        <input type="text" id="name" name="name" required><br>
+
+        <label for="privacy_status">Privacy Status:</label>
+        <select id="privacy_status" name="privacy_status" required>
+            <option value="non_private">Non Private</option>
+            <option value="private">Private</option>
+        </select><br>
+        
+        <label for="access_status">Access Status:</label>
+        <select id="access_status" name="access_status" required>
+            <option value="unlocked">Unlocked</option>
+            <option value="locked">Locked</option>
+        </select><br>
+
+        <button type="submit">Create Category</button>
+    </form>
+
+</body>
+
+</html>
