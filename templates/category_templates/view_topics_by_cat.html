@@ -3,11 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <h1 style="text-align: center;">BG Daddy</h1>
     <title>Topics List</title>
+    <style>
+        a {
+            display: block;
+        }
+    </style>
 </head>
 <body>
 
-<h1>Topics List</h1>
+    <h2>Topics List:</h2>
 
 <ul>
     {% for topic in topics %}
@@ -20,11 +26,14 @@
             <p>Author ID: {{ topic.author_id }}</p>
             <p>Is Locked: {{ topic.is_locked }}</p>
             <p>Replies Count: {{ topic.replies }}</p>
+            <a href="/topics/{{ topic.id }}">View Replies</a>
+
         </li>
     {% endfor %}
 </ul>
 
-<a href="/users/dashboard">Back to Dashboard</a>
+<a href="/categories/" style="display: block;">Back to Categories</a>
+<a href="/users/dashboard" style="display: block;">Back to Dashboard</a>
 
 </body>
 </html>

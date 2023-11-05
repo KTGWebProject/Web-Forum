@@ -205,6 +205,12 @@ def get_privileged_users(cat_id: int):
     
     privileged_users = [PrivilegedUsers.from_query_result(user[0], convert_read_write_access(user[1])) for user in read_query(query, tuple(params))]
 
+    if privileged_users == []:
+        raise HTTPException(
+            status_code=responses.NotFound().status_code,
+            detail=f"Category with id '{cat_id}' is not private or it doesn't exists!",
+        )
+    
     return privileged_users
     
 
@@ -302,9 +308,7 @@ def give_write_access_to_user(user_id: int, cat_id: int):
     )
 
 def lock_category_by_id(cat_id: int):
-    query = ''' UPDATE categories
-                SET is_locked = 1
-                WHERE id_category = ?'''
+    query = '''UPDATE categories SET is_locked = 1 WHERE id_category = ?'''
     params = [cat_id]
 
     query_result = update_query(query, tuple(params))
@@ -314,8 +318,8 @@ def lock_category_by_id(cat_id: int):
             status_code=responses.NotFound().status_code,
             detail=f"Category with id '{cat_id}' doesnt exists or it's already locked!",
         )
-    else:
-        return responses.OK(content=f"Category '{cat_id}' was locked.")
+    
+    return responses.OK(content=f"Category '{cat_id}' was locked.")
 
 
 def revoke_access(user_id: int, cat_id: int):

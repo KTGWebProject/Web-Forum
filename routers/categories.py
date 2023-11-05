@@ -50,23 +50,25 @@ async def view_categories(
 async def get_create_category_form(request: Request):
     return templates.TemplateResponse("create_category_form.html", {"request": request})
 
-
 @categories_router.get("/set_category_privacy", response_class=HTMLResponse)
 async def set_category_privacy(request: Request):
     return templates.TemplateResponse("set_privacy_form.html", {"request": request})
 
-
 @categories_router.get("/set_read_write_access", response_class=HTMLResponse)
 async def set_category_privacy(request: Request):
-    return templates.TemplateResponse(
-        "set_read_write_access.html", {"request": request}
-    )
+    return templates.TemplateResponse("set_read_write_access.html", {"request": request})
 
+@categories_router.get("/view_privileged_users", response_class=HTMLResponse)
+async def view_privileged_users(request: Request):
+    return templates.TemplateResponse("view_privileged_users.html", {"request": request})
 
 @categories_router.get("/revoke_user_access", response_class=HTMLResponse)
 async def set_category_privacy(request: Request):
     return templates.TemplateResponse("revoke_user_access.html", {"request": request})
 
+@categories_router.get("/lock_category", response_class=HTMLResponse)
+async def get_create_category_form(request: Request):
+    return templates.TemplateResponse("lock_category_form.html", {"request": request})
 
 @categories_router.get("/{cat_id}", response_model=list[Topic])
 async def view_topics_by_category_id(
@@ -107,12 +109,12 @@ async def get_privileged_users_by_cat(
             detail="You are not admin! You are not authorized to see privileged_users!",
         )
 
-    privileged_users = categories_services.get_privileged_users(cat_id)
-
-    return templates.TemplateResponse(
-        "view_privileged_users.html",
-        {"request": request, "privileged_users": privileged_users},
-    )
+    try:
+        privileged_users = categories_services.get_privileged_users(cat_id)
+        return templates.TemplateResponse("return_view_privileged_users.html", {"request": request, "privileged_users": privileged_users})
+    except:
+        return templates.TemplateResponse("return_vpu_no_cont.html", {"request": request, "content": f"Category with id '{cat_id}' is not private or it doesn't exists!"})
+    
 
 
 @categories_router.post("/", status_code=status.HTTP_201_CREATED)
@@ -135,11 +137,32 @@ async def create_category(
         privacy_status=privacy_status,
         access_status=access_status,
     )
-    category = categories_services.create_new_category(category, user.id)
-    return templates.TemplateResponse(
-        "return_category_model.html", {"request": request, "category": category}
-    )
+    
+    try:
+        category = categories_services.create_new_category(category, user.id)
+        return templates.TemplateResponse("return_category_model.html", {"request": request, "category": category})
+    except:
+        return templates.TemplateResponse("return_category_duplicate.html", {"request": request, "content": f"Category with name '{category.name}' already exists!"})
 
+@categories_router.post("/{cat_id}")
+async def lock_category(
+    request: Request,
+    cat_id: Annotated[int, Path(ge=1)]
+):
+    token = request.cookies.get("access_token")
+    logged_user: User = await auth.get_current_user(token)
+    if logged_user.is_admin == 0:
+        raise HTTPException(
+            status_code=responses.Unauthorized().status_code,
+            detail="You are not admin! You are not authorized to lock categories!",
+        )
+
+    try:
+        categories_services.lock_category_by_id(cat_id)
+    except:
+        return templates.TemplateResponse("return_lock_category.html", {"request": request, "content": f"Category with id '{cat_id}' doesnt exists or it's already locked!"})
+
+    return templates.TemplateResponse("return_lock_category.html", {"request": request, "content": f"Category '{cat_id}' was locked."})
 
 @categories_router.post("/{cat_id}/privacy", status_code=status.HTTP_200_OK)
 async def change_privacy(
@@ -189,14 +212,8 @@ async def revoke_user_access(
         )
 
     categories_services.revoke_access(user_id, cat_id)
-
-    return templates.TemplateResponse(
-        "return_revoke_access.html",
-        {
-            "request": request,
-            "content": f"If a user with the ID '{user_id}' previously had access to the category with ID '{cat_id}', they have already lost that access.",
-        },
-    )
+    
+    return templates.TemplateResponse("return_revoke_access.html", {"request": request, "content": f"If a user with the ID '{user_id}' previously had access to the category with ID '{cat_id}', they have already lost that access."})
 
 
 @categories_router.post("/{cat_id}/access/read", status_code=status.HTTP_200_OK)
@@ -266,15 +283,3 @@ async def give_user_write_access(
     )
 
 
-# @categories_router.patch("/{cat_id}")
-# async def lock_category(
-#     cat_id: Annotated[int, Path(ge=1)], token: Annotated[str, Depends(oauth2_scheme)]
-# ):
-#     logged_user: User = await auth.get_current_user(token)
-#     if logged_user.is_admin == 0:
-#         raise HTTPException(
-#             status_code=responses.Unauthorized().status_code,
-#             detail="You are not admin! You are not authorized to lock categories!",
-#         )
-
-#     return categories_services.lock_category_by_id(cat_id)

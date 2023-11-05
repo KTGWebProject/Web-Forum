@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <h1 style="text-align: center;">BG Daddy</h1>
     <title>Dashboard</title>
 </head>
 
@@ -14,7 +15,6 @@
     <h3>Guest Access:</h3>
     <ul>
         <li><a href="/categories/">Categories List</a></li>
-        <li><a href="/categories/{{ cat_id }}">Category Details</a></li>
         <li><a href="/topics/">Topics List</a></li>
         <!-- <li><a href="/topics/{{ id }}">Topic Details</a></li> -->
     </ul>
@@ -25,7 +25,6 @@
     <ul>
         <!-- Endpoints from Guest Access -->
         <li><a href="/categories/">Categories List</a></li>
-        <li><a href="/categories/{{ cat_id }}">Category Details</a></li>
         <li><a href="/topics/">Topics List</a></li>
         <li>"/topics/{id}" -> Topic Details</li><br>
 
@@ -46,26 +45,13 @@
     <ul>
         <li>"/topics/lock/{{ id }}" -> Lock Topic</li>
         <li><a href="/users/adminchange">Change User to Admin</a></li>
-        <li><a href="/categories/{{ cat_id }}/privileged_users">Privileged Users of Category</a></li>
-        <li><a href="/categories/create">Create Category</a></li>
-        <!-- <li><a href="/users/admin">Admin User Management</a></li>  -->
-        <li> Privileged Users of Category </p>
-        </li>
-        <form id="myForm" method="get" style="display: flex; align-items: center;">
-            <label for="cat_id">Category id:</label>
-            <input type="number" id="cat_id" name="cat_id" required min="1" style="margin-right: 5px; width: 50px;">
-            <button type="button" onclick="submitForm()">See privileged users</button>
-        </form>
-        <script>
-            function submitForm() {
-                var catId = document.getElementById('cat_id').value;
-                if (catId > 0) { window.location.href = '/categories/' + catId + '/privileged_users'; } else { alert('Please enter a valid Category id (> 0)'); }
-            }
-        </script>
         <li><a href="/categories/create_category">Create Category</a></li>
+        <!-- <li><a href="/users/admin">Admin User Management</a></li>  -->
+        <li><a href="/categories/view_privileged_users">View Privileged Users of a Category</a></li>
         <li><a href="/categories/set_category_privacy">Set Category Privacy</a></li>
         <li><a href="/categories/set_read_write_access">Set Category Read/Write Access</a></li>
         <li><a href="/categories/revoke_user_access">Revoke User Access to Category</a></li>
+        <li><a href="/categories/lock_category">Lock Category</a></li>
     </ul>
     {% endif %}
 
