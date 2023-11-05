@@ -49,7 +49,6 @@
             {% endfor %}
         </ul>
     </p>
-    <!-- <a href="/topics/count/{{ topic.category_id }}">Topics in category</a><br> -->
     {% if topic.is_locked == false %}
         <a href="/replies/create/{{topic.id}}">Create New Reply</a>
     {% endif %}

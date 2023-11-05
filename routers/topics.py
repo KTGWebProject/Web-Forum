@@ -10,6 +10,7 @@ from common.responses import BadRequest, Locked, NotFound
 from common.topic_responses import (create_topic_response, view_all_topics_response, count_topics_response, 
                                     view_topic_by_id_response, edit_topic_response, lock_topic_response)
 from mariadb import _mariadb as mdb
+from models.user import User
 from services import topics_services as ts
 
 topics_router = APIRouter(prefix="/topics")
@@ -82,10 +83,16 @@ async def lock_topic_form(request: Request,
         return templates.TemplateResponse("lock_topic.html", {"request": request, "id": id})
 
 
-@topics_router.get('/count/{category_id}', responses=count_topics_response)
-def topics_count(category_id: int, request: Request,) -> int:
+@topics_router.get('/count/', responses=count_topics_response)
+async def topics_count(request: Request,) -> int:
     '''Helping function to define the pages in the forum client'''
-    topics = ts._count_topics(category_id)[0]
+    token = request.cookies.get("access_token")
+    user: User = await get_current_user(token)
+    if user.is_admin:
+        topics = ts._count_topics_admin()
+    else:
+        topics = ts._count_topics_regular(user.id)
+
     return templates.TemplateResponse("count_topics.html", {"request": request, "topics": topics})
 
 

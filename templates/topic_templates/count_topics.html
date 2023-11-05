@@ -5,8 +5,20 @@
 </head>
 <body>
     <h1 style="text-align: center;">BG Daddy</h1>
-    
-    <h2><a href="/topics/count/1" >{{ category_id }}</h2>
+    <!-- <p>Number of Topics: <span id="topicCount"></span></p> -->
+    <pre id="topicCount"></pre>
+    <script>
+        // Fetch the count of topics using JavaScript
+        fetch('/topics/count/')
+            .then(response => response.json())
+            .then(data => {
+                const topicCountElement = document.getElementById('topicCount');
+                topicCountElement.textContent =  JSON.stringify(data, null, 2);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+    </script>
 
 </body>
 </html>

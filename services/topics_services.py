@@ -184,7 +184,14 @@ def lock_topic(id: int) -> bool:
 
     return result == 0
 
-def _count_topics(category_id: int):
+def _count_topics_admin():
+    return next((el for el in read_query('SELECT count(*) FROM topics')), 0)[0]
 
-    return next((el for el in read_query('SELECT count(*) FROM topics WHERE id_category = ?',
-                (category_id,))), 0)
+def _count_topics_regular(user_id: int):
+
+    return next((el for el in read_query('''
+                SELECT count(*) FROM topics t
+                where t.id_category not in 
+                (select categories_id_category from private_categories) or t.id_author in 
+                (select users_id_user from private_categories where users_id_user = ?)''',
+                (user_id,))), 0)
