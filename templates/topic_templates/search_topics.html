@@ -8,7 +8,7 @@
 <body>
     <h1>BG Daddy Topics</h1>
 
-    <form style="text-align: center;", method="get" action="/topics/">
+    <form style="text-align: center;" method="get" action="/topics/">
         {% if search %}
         <input type="text" name="search" value="{{ search }}" placeholder="Search">
         {% else %}
@@ -25,16 +25,21 @@
             <label for="include_replies">Include Replies</label>
         </div>
         <div>
-            <input type="radio" name="sort_oldest_first" id="sort_newest_first" value="false" checked>
-            <label for="sort_newest_first">Newest First</label>
+            <input type="radio" name="sort_latest_first" id="sort_latest_first" value="false" checked>
+            <label for="sort_latest_first">Latest First</label>
         </div>
         <div>
-            <input type="radio" name="sort_oldest_first" id="sort_oldest_first" value="true">
-            <label for="sort_oldest_first">Oldest First</label>
+            <input type="radio" name="sort_latest_first" id="sort_latest_first" value="true">
+            <label for="sort_latest_first">Oldest First</label>
         </div>
+        <div><input type="checkbox" name="paginated" id="paginated" value="false" checked>Paginated</div>
         <div>
             <input type="radio" name="page" id="page" value=1>
-            <label for="page">Page 1</label>
+            <label for="page" hidden>Paginated</label>
+            <select id="page" name="page">
+                <option value=1>Page 1</option>
+                <option value=2>Page 2</option>
+            </select>
         </div>
         
         <button type="submit">Search</button>
@@ -43,16 +48,20 @@
     {% for item in result %}
         {% if include_topics %}
             <li>
-                <a href="/topics/{{ item['id'] }}">{{ item['title'] }}</a>
-                <p>{{ item['text'] }}</p>
-                <p>Created at: {{ item['created_on'] }}</p>
+                <a href="/topics/{{item.id}}">{{item.title}}</a>
+                <p>Replies: {{ item.replies }}</p>
+                <p>Created On: {{ item.created_on.strftime("%Y-%m-%d %H:%M:%S") }}</p>
+                <p>Locked: {{ item.is_locked }}</p>
+            
             </li>
         {% endif %}
         {% if include_replies %}
             <li>
-                <a href="/topics/{{ item['id'] }}">{{ item['title'] }}</a>
-                <p>{{ item['content'] }}</p>
-                <p>Created at: {{ item['created_on'] }}</p>
+                <p>Reply to topic: {{ item.topic_id }}</p>
+                <p>Created On: {{ item.created_on.strftime("%Y-%m-%d %H:%M:%S") }}</p>
+                <p>Content: {{ item.content }}</p>
+                <p>Is best: {{ item.is_best }}</p>
+                <p>Upvotes: {{ item.upvotes }} Downvotes: {{ item.downvotes }}</p>
             </li>
         {% endif %}
     {% endfor %}

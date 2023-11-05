@@ -5,6 +5,8 @@ from datetime import datetime
 
 
 class TopicResponse(BaseModel):
+    id: int
+    topic_id: int
     content: str
     username: str
     created: datetime | None = None # = None only for local testing, to be removed later!!!
@@ -13,8 +15,10 @@ class TopicResponse(BaseModel):
     is_best: bool
 
     @classmethod
-    def replies_from_query_results(cls, content, username, created, upvotes, downvotes, is_best):
-        return cls(content=content, 
+    def replies_from_query_results(cls, content, username, created, upvotes, downvotes, is_best, id, topic_id):
+        return cls(id=id,
+                   topic_id=topic_id, 
+                   content=content, 
                    username=username, 
                    created=created,
                    upvotes=upvotes,

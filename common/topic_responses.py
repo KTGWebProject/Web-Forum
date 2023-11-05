@@ -69,7 +69,8 @@ view_topic_by_id_response = {
                         text="stringstri", 
                         category_id=0, 
                         author_id=0,
-                        replies=[TopicResponse(
+                        replies=[TopicResponse(id =0,
+                            topic_id=0,
                             content='string', 
                             username='string', 
                             created=dt.datetime.utcnow(),

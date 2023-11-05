@@ -99,7 +99,8 @@ fake_reply2['content'] = 'Fork off content'
 fake_reply2['topic_id'] = 1
 fake_reply2['created_on'] = datetime(2023, 11, 22, 14, 00, 00).strftime("%Y-%m-%dT%H:%M:%S")
 
-fake_topic_response = {
+fake_topic_response = {'id': 1,
+    'topic_id': 1,
     'content': 'Bullshirt content', 
     'username': 'Fake username', 
     'created': datetime(2023, 11, 21, 14, 00, 00).strftime("%Y-%m-%dT%H:%M:%S"),

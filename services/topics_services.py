@@ -17,7 +17,8 @@ def view_all_topics(
     params = [f'%{x}%' for x in search_in_title] if search_in_title else []
 
     if user and user.is_admin:
-        topics_query =  '''SELECT t.id_topic, t.title, t.created_on, t.text, t.id_category, t.id_author,
+        topics_query =  '''SELECT t.id_topic, t.title, t.created_on, t.text, t.id_category, 
+                        (select username from users where id_user = t.id_author) as id_author,
                         (SELECT count(*) from replies WHERE topics_id_topic = t.id_topic) as replies, t.is_locked 
                         FROM topics t 
                         '''
@@ -58,12 +59,14 @@ def view_all_topics(
                             ' AND ' + ' or '.join(f" content like '%{x}%'" for x in search_in_title)
                             ])
         topics_query =  f'''
-            (SELECT t.id_topic, t.title, t.created_on, t.text, t.id_category, t.id_author,
+            (SELECT t.id_topic, t.title, t.created_on, t.text, t.id_category, 
+            (select username from users where id_user = t.id_author) as id_author,
             (SELECT count(*) FROM replies WHERE topics_id_topic = t.id_topic) AS replies, t.is_locked 
             FROM topics t where (t.id_category) NOT IN (SELECT categories_id_category FROM private_categories)
             {topic_params[0]} )
             UNION 
-            (SELECT t.id_topic, t.title, t.created_on, t.text, t.id_category, t.id_author,
+            (SELECT t.id_topic, t.title, t.created_on, t.text, t.id_category, 
+            (select username from users where id_user = t.id_author) as id_author,
             (SELECT count(*) FROM replies WHERE topics_id_topic = t.id_topic) AS replies, t.is_locked 
             FROM topics t WHERE (t.id_category, {topic_params[1]}) IN (SELECT categories_id_category, users_id_user FROM private_categories)
             {topic_params[2]} )
@@ -114,7 +117,7 @@ def get_topic_replies(topic: Topic) -> Topic:
                 SELECT r.content AS Reply, u.username AS User, r.created_on AS 'Post date', 
                 (SELECT count(*) FROM votes v WHERE v.replies_id_reply = r.id_reply AND v.is_upvote=1) AS Upvotes, 
                 (SELECT count(*) FROM votes dv WHERE dv.replies_id_reply = r.id_reply AND dv.is_upvote=-1) AS Downvotes,
-                r.is_best AS 'Best Reply'
+                r.is_best AS 'Best Reply', r.id_reply, r.topics_id_topic
                 FROM replies r
                 JOIN users u ON u.id_user = r.users_id_user
                 WHERE r.topics_id_topic = ?''',

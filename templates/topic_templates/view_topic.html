@@ -1,42 +1,57 @@
 <!DOCTYPE html>
 <html>
-    <head>
+    <head> 
         <title>BG Daddy Topics</title>
-        <style>
-        h1 {
-            display: inline-block;
-            text-align: center;
-            background-color:rgba(176, 224, 230, 0.479);
-        }
-        h3 {
-            display: inline-block;
-            border: 1px solid rgb(0, 0, 0); /* Add a solid black border around the h1 element */
-            padding: 10px; /* Add padding to give some spacing between the text and the border */
-        }
-        </style>
 </head>
 <body>
     <h1>BG Daddy</h1>
-    <h2>Title: {{ topic.title }}
-        <p>posted: {{ topic.created_on.strftime("%Y-%m-%d %H:%M:%S") }} 
+    <h2>{{ topic.title }}</h2>
+    <h3>{{topic.text}}</h3>
+
+    <h4>
+        <p>posted: {{ topic.created_on.strftime("%Y-%m-%d %H:%M:%S") }} <br>
         Locked: {{ topic.is_locked }}
         </p>
-    </h2>
-    <h3>Text: {{topic.text}}</h3>
-    
+    </h4>
     
     <p style="font-size: large;"><strong>Replies</strong>: 
         <ul>
             {% for reply in topic.replies %}
             <li>
-                <h3>Content: {{ reply.content }}</a></h3>
+                <h3>Content: {{ reply.content }}</h3>
                 <p>Created by: {{ reply.username }}, {{ reply.created }}</p>
+                {% if reply.is_best == false %}
+                    <form action="../replies/make_best/" method="POST">
+                        <input type="hidden" name="topic_id" id="topic_id" value={{reply.topic_id}}>
+                        <input type="hidden" name="reply_id" id="reply_id" value={{reply.id}}>
+                
+                        <button type="submit">Make Best</button>
+                    </form> 
+                {% else %}
+                    <h4>Best reply</h4>
+                {% endif %}
+                
+                <form action="../replies/vote/" method="POST">
+                    <select id="vote" name="vote" required>
+                        <option value=1>Vote up</option>
+                        <option value=-1>Vote down</option>
+                        <option value=0>Remove vote</option>
+                    </select>
+                    <input type="hidden" name="topic_id" id="topic_id" value={{reply.topic_id}}>
+                    <input type="hidden" name="reply_id" id="reply_id" value={{reply.id}}>
                     
+                    <button type="submit">Vote</button>
+                    </form> 
+                <p>Upvotes {{ reply.upvotes }} <br>
+                   Downvotes {{ reply.downvotes }} 
+                </p>
             </li>
             {% endfor %}
         </ul>
     </p>
-    <a href="/topics/count/{{ topic.category_id }}">Topics in category</a><br>
-    <a href="/replies/{{ topic.id }}">Create New Reply</a>
+    <!-- <a href="/topics/count/{{ topic.category_id }}">Topics in category</a><br> -->
+    {% if topic.is_locked == false %}
+        <a href="/replies/create/{{topic.id}}">Create New Reply</a>
+    {% endif %}
 </body>
 </html>

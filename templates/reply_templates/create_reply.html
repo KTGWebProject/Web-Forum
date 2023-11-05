@@ -3,22 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Create New Reply</title>
 </head>
 <body>
-    <form action="/replies/{{topic_id}}" method="POST">
+    <form action="/replies/create/{{id}}" method="POST">
         <div>
-            <input type="text" id="title" name="title" placeholder="Topic title" required>
-        </div>
-        <div>
-            <input type="text" id="text" name="text" placeholder="Topic text" required>
-        </div>
-        <div>
-            <input type="text"  id="category_id"name="category_id" placeholder="category_id" required>
+            <input type="text" id="content" name="content" placeholder="Reply content" required>
         </div>
 
-        <button type="submit">Create New Topic</button> 
+        <button>Create New Reply</button>
     </form>
-    
+    <a href="/topics/{{id}}" class="back-button">Back to topic</a>
 </body>
 </html>

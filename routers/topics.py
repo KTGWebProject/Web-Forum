@@ -14,17 +14,17 @@ from services import topics_services as ts
 
 topics_router = APIRouter(prefix="/topics")
 
-templates = Jinja2Templates(directory="templates")
+templates = Jinja2Templates(directory="templates/topic_templates")
 
 @topics_router.get('/', response_model=list[Topic|Reply], responses=view_all_topics_response) 
 async def view_all(
     request: Request,
-    search: Annotated[str | None, Query(min_length=3, max_length=30)] = None,
-    include_topics: Annotated[bool, Query] = True,
-    include_replies: Annotated[bool, Query] = True,
-    sort_latest_first: Annotated[bool, Query] = True,
-    paginated: Annotated[bool, Query] = False,
-    page: Annotated[int, Query] = 1,
+    search: str = Form(''),
+    include_topics: bool = Form(True),
+    include_replies: bool= Form(False),
+    sort_latest_first: bool= Form(True),
+    paginated: bool = Form(False),
+    page: bool= Form(1),
     ) -> list[Topic|Reply]: 
     token = request.cookies.get("access_token")
 
@@ -51,24 +51,42 @@ async def view_all(
                                     paginated=paginated, 
                                     default_page=page
                                     )
-    return templates.TemplateResponse("topic_templates/list_topics.html", {"request": request, "topics": result})
+    return templates.TemplateResponse("list_topics.html", {"request": request, "topics": result})
 
 
 @topics_router.get('/search', response_class=HTMLResponse)
 async def search(request: Request):
-    return templates.TemplateResponse("topic_templates/search_topics.html", {"request": request})
+                # search: Annotated[str | None, Form(min_length=3, max_length=30)] = None,
+                # include_topics: Annotated[bool, Form()] = True,
+                # include_replies: Annotated[bool, Form()] = True,
+                # sort_latest_first: Annotated[bool, Form()] = True,
+                # paginated: Annotated[bool, Form()] = False,
+                # page: Annotated[int, Form()] = 1
+    return templates.TemplateResponse("search_topics.html",
+                                       {"request": request})
+                                        # "search": search,
+                                        # "include_topics": include_topics,
+                                        # "include_repies": include_replies,
+                                        # "sort_latest_first": sort_latest_first,
+                                        # "paginated": paginated,
+                                        # "page": page})
 
 
 @topics_router.get('/create', response_class=HTMLResponse)
 async def get_create_new_topic_form(request: Request):
-        return templates.TemplateResponse("topic_templates/create_topic.html", {"request": request})
+        return templates.TemplateResponse("create_topic.html", {"request": request})
+
+@topics_router.get('/lock/{id}', response_class=HTMLResponse)
+async def lock_topic_form(request: Request,
+                          id: int):
+        return templates.TemplateResponse("lock_topic.html", {"request": request, "id": id})
 
 
 @topics_router.get('/count/{category_id}', responses=count_topics_response)
 def topics_count(category_id: int, request: Request,) -> int:
     '''Helping function to define the pages in the forum client'''
     topics = ts._count_topics(category_id)[0]
-    return templates.TemplateResponse("topic_templates/count_topics.html", {"request": request, "topics": topics})
+    return templates.TemplateResponse("count_topics.html", {"request": request, "topics": topics})
 
 
 @topics_router.get('/{id}', response_model=Topic, responses=view_topic_by_id_response) 
@@ -82,7 +100,7 @@ def view_topic(
     topic = ts.get_topic_by_id(id)
     
     if topic:
-        return templates.TemplateResponse("topic_templates/view_topic.html", {"request": request, "topic": topic})  
+        return templates.TemplateResponse("view_topic.html", {"request": request, "topic": topic})  
     else:
         return NotFound(content=f'Topic with id {id} is not found')
 
@@ -111,14 +129,14 @@ async def create_topic(
         except mdb.IntegrityError as ie:
             return BadRequest(content=str(ie))
 
-        return templates.TemplateResponse("topic_templates/create_topic.html", {"request": request, "new_topic": new_topic})
+        return templates.TemplateResponse("create_topic.html", {"request": request, "new_topic": new_topic})
     elif ts.user_has_write_access(new_topic, user):
         try:
             ts.create_topic(new_topic)
         except mdb.IntegrityError as ie:
             return BadRequest(content=str(ie))
 
-        return templates.TemplateResponse("topic_templates/create_topic.html", {"request": request, "new_topic": new_topic})
+        return templates.TemplateResponse("create_topic.html", {"request": request, "new_topic": new_topic})
     
     return Response(
                     status_code=status.HTTP_403_FORBIDDEN, 
@@ -159,7 +177,7 @@ async def edit_topic(
     return ts.edit_topic(existing_topic, new_title, new_text)
     
     
-@topics_router.put('/{id}', status_code=status.HTTP_200_OK, responses=lock_topic_response) 
+@topics_router.post('/lock/{id}', status_code=status.HTTP_200_OK, responses=lock_topic_response) 
 async def lock_topic(
         request: Request,
         id: Annotated[int, Path(description='The ID of the topic you want to lock')]
@@ -184,4 +202,5 @@ async def lock_topic(
                         content=f'Topic {existing_topic.id} already locked'
                         )
     existing_topic.is_locked = True
-    return existing_topic
+    return templates.TemplateResponse("list_topics.html", 
+                                      {"request": request, "existing_topic": existing_topic})

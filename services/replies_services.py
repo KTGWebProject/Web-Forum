@@ -27,6 +27,14 @@ def topic_is_locked(reply_id) -> bool:
     result = read_query(''' SELECT is_locked FROM topics  WHERE id_topic = ?;''', (reply_id, ))
     return result[0][0] == 1
 
+def topic_is_in_a_private_category(topic: Topic):
+    '''check topic's category status'''
+    result = read_query('''SELECT categories_id_category
+                        FROM private_categories 
+                        WHERE categories_id_category = ?''', (topic.category_id,))
+    
+    return next(((row) for row in result), None)
+
 def user_has_write_access(topic: Topic, user: User):
     '''check if the user has write access if a category is private'''
     result = read_query('''
