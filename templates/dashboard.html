@@ -16,7 +16,6 @@
     <ul>
         <li><a href="/categories/">Categories List</a></li>
         <li><a href="/topics/">Topics List</a></li>
-        <!-- <li><a href="/topics/{{ id }}">Topic Details</a></li> -->
     </ul>
     {% endif %}
 
@@ -26,15 +25,8 @@
         <!-- Endpoints from Guest Access -->
         <li><a href="/categories/">Categories List</a></li>
         <li><a href="/topics/">Topics List</a></li>
-        <li>"/topics/{id}" -> Topic Details</li><br>
 
         <!-- Additional Endpoints for Registered Users -->
-        <li>"/topics/create" -> Create Topic</li>
-        <li>"/topics/edit/{id}" -> Edit Topic</li>
-        <li>"/replies/create/{topic_id}" -> Create Reply</li>
-        <li>"/replies/choose_best/" -> Choose Best Reply</li>
-        <li>"/replies/vote/" -> Vote on Reply</li>
-        <li>"/replies/edit/reply/{reply_id}" -> Edit Reply</li>
         <li><a href="/messages/viewtemplate">View Messages</a></li>
         <li><a href="/messages/template">Create Message</a></li>
     </ul>
@@ -43,7 +35,6 @@
     {% if user_role == 'admin' %}
     <h3>Admin Access:</h3>
     <ul>
-        <li>"/topics/lock/{{ id }}" -> Lock Topic</li>
         <li><a href="/users/adminchange">Change User to Admin</a></li>
         <li><a href="/categories/create_category">Create Category</a></li>
         <!-- <li><a href="/users/admin">Admin User Management</a></li>  -->
