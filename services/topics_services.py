@@ -5,7 +5,7 @@ from models.reply import Reply
 
 
 def view_all_topics(
-        search_in_title: [str],
+        search_in_title: str = '',
         include_topics: bool = True,
         include_replies: bool = True,
         sort_by_date: bool = False,
@@ -120,7 +120,8 @@ def get_topic_replies(topic: Topic) -> Topic:
                 r.is_best AS 'Best Reply', r.id_reply, r.topics_id_topic
                 FROM replies r
                 JOIN users u ON u.id_user = r.users_id_user
-                WHERE r.topics_id_topic = ?''',
+                WHERE r.topics_id_topic = ?
+                order by r.created_on desc''',
                 (topic.id,)
                 )        
     topic.replies = [TopicResponse.replies_from_query_results(*row) for row in replies]

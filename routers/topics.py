@@ -2,7 +2,7 @@ from datetime import datetime
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from common.auth import get_current_user
-from typing import Annotated
+from typing import Annotated, Optional
 from fastapi import APIRouter, Form, Query, Path, Response, status, Request
 from models.reply import Reply
 from models.topic import Topic
@@ -17,15 +17,20 @@ topics_router = APIRouter(prefix="/topics")
 
 templates = Jinja2Templates(directory="templates/topic_templates")
 
+@topics_router.get('/search_topics', response_class=HTMLResponse)
+async def search(request: Request): 
+        
+        return templates.TemplateResponse("search_topics.html", {"request": request})
+
 @topics_router.get('/', response_model=list[Topic|Reply], responses=view_all_topics_response) 
 async def view_all(
     request: Request,
-    search: str = Form(''),
-    include_topics: bool = Form(True),
-    include_replies: bool= Form(False),
-    sort_latest_first: bool= Form(True),
-    paginated: bool = Form(False),
-    page: bool= Form(1),
+    search: str = Query(''),
+    include_topics: bool = True,
+    include_replies: Optional[bool] = False,
+    sort_latest_first: bool = True,
+    paginated: bool = True,
+    page: int = 1,
     ) -> list[Topic|Reply]: 
     token = request.cookies.get("access_token")
 
@@ -52,25 +57,7 @@ async def view_all(
                                     paginated=paginated, 
                                     default_page=page
                                     )
-    return templates.TemplateResponse("list_topics.html", {"request": request, "topics": result})
-
-
-@topics_router.get('/search', response_class=HTMLResponse)
-async def search(request: Request):
-                # search: Annotated[str | None, Form(min_length=3, max_length=30)] = None,
-                # include_topics: Annotated[bool, Form()] = True,
-                # include_replies: Annotated[bool, Form()] = True,
-                # sort_latest_first: Annotated[bool, Form()] = True,
-                # paginated: Annotated[bool, Form()] = False,
-                # page: Annotated[int, Form()] = 1
-    return templates.TemplateResponse("search_topics.html",
-                                       {"request": request})
-                                        # "search": search,
-                                        # "include_topics": include_topics,
-                                        # "include_repies": include_replies,
-                                        # "sort_latest_first": sort_latest_first,
-                                        # "paginated": paginated,
-                                        # "page": page})
+    return templates.TemplateResponse("list_topics.html", {"request": request, "result": result})
 
 
 @topics_router.get('/create', response_class=HTMLResponse)
@@ -109,7 +96,8 @@ def view_topic(
     if topic:
         return templates.TemplateResponse("view_topic.html", {"request": request, "topic": topic})  
     else:
-        return NotFound(content=f'Topic with id {id} is not found')
+        return templates.TemplateResponse("view_topic.html",
+                        {"request": request, "content": NotFound(content=f'Topic with id {id} is not found')})
 
 
 @topics_router.post('/', status_code=status.HTTP_201_CREATED, responses=create_topic_response)

@@ -9,26 +9,33 @@
     <button onclick="window.location.href = '//127.0.0.1:8000/users/dashboard';">Dashboard</button>
     
     <h1> BG Daddy Topics</h1>
-    
-    <button style="text-align: center;" onclick="location='/topics/search'" type="button">Search</button>
+
+    <button style="text-align: center;" onclick="location='/topics/search_topics'" type="button">Search</button>
     <button style="text-align: center;" onclick="location='/topics/create'" type="button">Create New Topic</button>
     <ul>
-        {% for item in topics %}
-        <li>
-            <p>By: {{ item.author_id }}</p>
-            <a href="/topics/{{item.id}}">{{item.title}}</a>
-            <p>Replies: {{ item.replies }}</p>
-            <p>Created On: {{ item.created_on.strftime("%Y-%m-%d %H:%M:%S") }}</p>
-            {% if item.is_locked == true %}
-                <h4>Locked</h4>
+        {% for item in result %}
+            {% if item['type'] == Topic %}
+            <li>
+                <p>By: {{ item.author_id }}</p>
+                <a href="/topics/{{item.id}}">{{item.title}}</a>
+                <p>Replies: {{ item.replies }}</p>
+                <p>Created On: {{ item.created_on.strftime("%Y-%m-%d %H:%M:%S") }}</p>
+                {% if item.is_locked == true %}
+                    <h4>Locked</h4>
+                {% else %}
+                    <button onclick="window.location.href = '//127.0.0.1:8000/topics/lock/{{item.id}}';">Lock topic</button>
+                {% endif %}
             {% else %}
-                <button onclick="window.location.href = '//127.0.0.1:8000/topics/lock/{{item.id}}';">Lock topic</button>
+                <p><strong>Reply to topic:</strong> {{ item.topic_id }}</p>
+                <p><strong>Created On:</strong> {{ item.created_on.strftime("%Y-%m-%d %H:%M:%S") }}</p>
+                <p><strong>Content:</strong> {{ item.content }}</p>
+                <p>Is best: {{ item.is_best }}</p>
+                <p><strong>Upvotes:</strong> {{ item.upvotes }} <strong>Downvotes:</strong> {{ item.downvotes }}</p><br>
+            
             {% endif %}
             </li>
         {% endfor %}
     </ul>
 
 </body>
-</html>
-
-    
+</html> 
