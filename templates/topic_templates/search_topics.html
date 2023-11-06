@@ -6,35 +6,41 @@
     <title>BG Daddy</title>
 </head>
 <body>
-    <h1>BG Daddy Topics</h1>
+    <h2>Search in BG Daddy Forum</h2>
 
-    <form style="text-align: center;" method="get" action="/topics/">
-        {% if search %}
-        <input type="text" name="search" value="{{ search }}" placeholder="Search">
-        {% else %}
-        <input type="text" name="search" placeholder="Search">
-        {% endif %}
-        
-        
+    <form action="/topics/" method="get">
+        <!-- <input type="text" name="search" value="{{ search }}" placeholder="Search"> -->
+        <textarea name="search" id="search" cols="50" rows="1" placeholder="Search words, separated by whitespace"></textarea>
         <div>
-            <input type="checkbox" name="include_topics" id="include_topics" value="true" checked>
+            <!-- <input type="checkbox" name="include_topics" id="include_topics" value="true"> -->
             <label for="include_topics">Include Topics</label>
+            <select id="include_topics" name="include_topics">
+                <option value="true">Yes</option>
+                <option value="false">No</option>
+            </select>
         </div>
         <div>
-            <input type="checkbox" name="include_replies" id="include_replies" value="true" checked>
             <label for="include_replies">Include Replies</label>
+            <select id="include_replies" name="include_replies">
+                <option value="true">Yes</option>
+                <option value="false">No</option>
+            </select>
         </div>
         <div>
-            <input type="radio" name="sort_latest_first" id="sort_latest_first" value="false" checked>
-            <label for="sort_latest_first">Latest First</label>
+            <label for="sort_latest_first">Include Replies</label>
+            <select id="sort_latest_first" name="sort_latest_first">
+                <option value="true">Latest First</option>
+                <option value="false">Oldest First</option>
+            </select>
         </div>
+        
         <div>
-            <input type="radio" name="sort_latest_first" id="sort_latest_first" value="true">
-            <label for="sort_latest_first">Oldest First</label>
-        </div>
-        <div><input type="checkbox" name="paginated" id="paginated" value="false" checked>Paginated</div>
+        <label for="paginated">Paginated</label>
+            <select id="paginated" name="paginated">
+                <option value="true">Yes</option>
+                <option value="false">No</option>
+            </select>
         <div>
-            <input type="radio" name="page" id="page" value=1>
             <label for="page" hidden>Paginated</label>
             <select id="page" name="page">
                 <option value=1>Page 1</option>
@@ -44,9 +50,9 @@
         
         <button type="submit">Search</button>
     </form>
-    <ul>
+    <!-- <ul>
     {% for item in result %}
-        {% if include_topics %}
+        {% if item['type'] == Topic %}
             <li>
                 <a href="/topics/{{item.id}}">{{item.title}}</a>
                 <p>Replies: {{ item.replies }}</p>
@@ -55,7 +61,7 @@
             
             </li>
         {% endif %}
-        {% if include_replies %}
+        {% if item['type'] == Reply %}
             <li>
                 <p>Reply to topic: {{ item.topic_id }}</p>
                 <p>Created On: {{ item.created_on.strftime("%Y-%m-%d %H:%M:%S") }}</p>
@@ -65,7 +71,7 @@
             </li>
         {% endif %}
     {% endfor %}
-    </ul>
+    </ul> -->
 
 
 </body>
