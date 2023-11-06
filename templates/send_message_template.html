@@ -12,17 +12,40 @@
     <br>  
     <!-- <h2 style="text-align: center;">{{message}}</h2> -->
     <div>
-        <h3 style="text-align: left;">{{old_content}}</h3>
+        <style>
+            .form-group {
+                margin-bottom: 15px; 
+            }
+        
+            label {
+                display: block; 
+                margin-bottom: 5px; 
+            }
+        
+            input[type="text"], textarea {
+                width: 100%; 
+            }
+        </style>
+        {% if old_content %}
+            <div class="form-group">
+                <span class="header">Previous Message:</span>
+                <textarea readonly rows="5" cols="50">{{old_content}}</textarea>
+            </div>
+        {% endif %}
         <form action="/messages" method="post">
-            <label for="recipients">Recipients:</label>
-            <input type="text" id="recipients" name="recipients" value="{{ previous_author}}" required>
-            <br>
-            <label for="subject">subject:</label>
-            <input type="text" id="subject" name="subject" value="{{ previous_subject}}" required>
-            <br>
-            <label for="text">content:</label>
-            <textarea id="content" name="content" required rows="5" cols="50"></textarea>
-            <input type="hidden" id="id_parent_message" name="id_parent_message" value={{id_parent_message}}>
+            <div class="form-group">
+                <label for="recipients">Recipients:</label>
+                <input type="text" id="recipients" name="recipients" value="{{ previous_author}}" required>
+            </div>
+            <div class="form-group">
+                <label for="subject">Subject:</label>
+                <input type="text" id="subject" name="subject" value="{{ previous_subject}}" required>
+            </div>
+            <div class="form-group">
+                <label for="content">Content:</label>
+                <textarea id="content" name="content" required rows="5" cols="50"></textarea>
+            </div>
+            <input type="hidden" id="id_parent_message" name="id_parent_message" value="{{id_parent_message}}">
             <button type="submit">Send Message</button>
         </form>
     </div>    
