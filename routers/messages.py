@@ -39,8 +39,10 @@ async def send_message(
     '''
     access_token = request.cookies.get("access_token")
     user: User = await auth.get_current_user(access_token)
-    
-    await post_message(user.id, recipients, subject, content, id_parent_message)
+    try:
+        await post_message(user.id, recipients, subject, content, id_parent_message)
+    except:
+        return templates.TemplateResponse("no_such_user_template.html", context={"request": request})
     return templates.TemplateResponse("message_sent.html", context={"request": request})
         
     
